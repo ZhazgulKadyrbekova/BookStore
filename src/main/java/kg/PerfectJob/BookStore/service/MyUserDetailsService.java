@@ -19,7 +19,7 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        kg.PerfectJob.BookStore.entity.User user = userRepository.findByEmailContainingIgnoreCase(email);
+        kg.PerfectJob.BookStore.entity.User user = userRepository.findByEmailIgnoreCase(email);
         List<Role> roles = new ArrayList<>();
         roles.add(user.getRole());
         return new User(user.getEmail(), user.getPassword(), roles);
