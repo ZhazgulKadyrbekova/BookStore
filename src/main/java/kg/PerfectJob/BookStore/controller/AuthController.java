@@ -1,11 +1,12 @@
 package kg.PerfectJob.BookStore.controller;
 
-import kg.PerfectJob.BookStore.dto.UserDTO;
+import kg.PerfectJob.BookStore.dto.*;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.service.UserService;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import kg.PerfectJob.BookStore.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin
@@ -14,12 +15,49 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final UserService userService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     public AuthController(UserService userService) {
         this.userService = userService;
     }
 
     @PostMapping("/user")
-    public User register(@RequestBody UserDTO userDTO) {
-        return userService.create(userDTO);
+    public ResponseMessage createUser(@RequestBody UserDTO userDTO) {
+        return new ResponseMessage(userService.createUser(userDTO));
+    }
+
+    @PostMapping("/admin")
+    public String createAdmin(@RequestBody UserAdminDTO userAdminDTO) {
+        return userService.createAdmin(userAdminDTO);
+    }
+
+    @PostMapping("/saveAdmin")
+    public User saveAdmin(@RequestBody UserSaveAdminDTO userDTO) {
+        return userService.saveAdmin(userDTO);
+    }
+
+    @GetMapping("/activate/{code}")
+    public String activate(@PathVariable("code") String code) {
+        return userService.activate(code);
+    }
+
+    @PostMapping("/forgotPassword/{email}")
+    public ResponseMessage forgotPassword(@PathVariable String email) {
+        return new ResponseMessage(userService.forgotPassword(email));
+    }
+
+    @PostMapping("/auth")
+    public TokenDTO getToken(@RequestBody UserAuthDTO userAuthDTO) throws Exception {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(userAuthDTO.getEmail(), userAuthDTO.getPassword()));
+        } catch (Exception e) {
+            throw new Exception("Invalid data");
+        }
+        return new TokenDTO(jwtUtil.generateToken(userAuthDTO.getEmail()));
     }
 }
