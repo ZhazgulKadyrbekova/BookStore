@@ -1,5 +1,6 @@
 package kg.PerfectJob.BookStore.dto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class ResponseMessage {
-    private String message;
+public class UserSaveAdminDTO {
+    private String email;
+    private String password;
+    private String name;
+    private String surname;
 }
