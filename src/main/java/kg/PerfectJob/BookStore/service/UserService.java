@@ -17,4 +17,5 @@ public interface UserService {
     User saveAdmin(UserSaveAdminDTO userSaveAdminDTO);
     String activate(String code);
     String forgotPassword(String email);
+    void create(User user);
 }
