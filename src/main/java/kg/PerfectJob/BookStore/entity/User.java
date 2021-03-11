@@ -1,5 +1,6 @@
 package kg.PerfectJob.BookStore.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,7 +15,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "users")
-public class User extends Base{
+public class User extends Base {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -23,6 +24,7 @@ public class User extends Base{
     @Column(name = "email", unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password")
     private String password;
 

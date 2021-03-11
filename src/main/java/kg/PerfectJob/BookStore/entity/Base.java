@@ -9,8 +9,6 @@ import java.time.LocalDateTime;
 public class Base {
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted;
 
     @PrePersist
     public void onPrePersist() {
