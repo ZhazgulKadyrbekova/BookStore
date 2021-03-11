@@ -60,7 +60,12 @@ public class UserServiceImpl implements UserService {
         user.setPassword(encoder.encode(userDTO.getPassword()));
         user.setName(userDTO.getName() + " " + userDTO.getSurname());
         user.setOccupation(userDTO.getOccupation());
-
+	    user.setActivationCode(UUID.randomUUID().toString());
+	    Role role = roleRepository.findByNameContainingIgnoreCase(user.getOccupation());
+	    if (role == null) {
+	        role = roleRepository.save(new Role(0, "ROLE_" + userDTO.getOccupation().toUpperCase()));
+        }
+	    user.setRole(role);
         String message = "To activate your account visit link: register/activate/" + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation of account", message)) {
             userRepository.save(user);
@@ -75,8 +80,9 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userAdminDTO.getEmail());
         Role role = roleRepository.findByNameContainingIgnoreCase(userAdminDTO.getRole());
         if (role == null)
-            role = roleRepository.save(new Role(0, userAdminDTO.getRole().toUpperCase()));
+            role = roleRepository.save(new Role(0, "ROLE_" + userAdminDTO.getRole().toUpperCase()));
         user.setRole(role);
+	    user.setActivationCode(UUID.randomUUID().toString());
         String message = "To activate your account visit link: register/activate/" + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation of account", message)) {
             userRepository.save(user);
@@ -118,5 +124,11 @@ public class UserServiceImpl implements UserService {
             return "New password has been successfully sent to email: " + email;
         }
         return "We could not send new password to your email. Try again later.";
+    }
+
+    @Override
+    public void create(User user) {
+        user.setPassword(encoder.encode(user.getPassword()));
+        userRepository.save(user);
     }
 }
