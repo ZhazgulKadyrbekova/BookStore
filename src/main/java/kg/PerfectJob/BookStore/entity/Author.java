@@ -14,11 +14,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "authors")
 public class Author extends Base {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "author_id")
-    private long ID;
-
+    
     @Column(name = "name")
     private String name;
 
@@ -35,6 +31,6 @@ public class Author extends Base {
     private String biography;
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 }

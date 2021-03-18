@@ -18,7 +18,7 @@ public class Init implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        Role role = roleRepository.save(new Role(0, "ROLE_ADMIN"));
-//        userService.create(new User(0, "admin@gmail.com", "12345678", "Admin", null, true, null, role));
+//        Role role = roleRepository.save(new Role("ROLE_ADMIN"));
+//        userService.create(new User("admin@gmail.com", "12345678", "Admin", null, true, null, role));
     }
 }

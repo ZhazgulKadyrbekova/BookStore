@@ -13,11 +13,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "book_comments")
 public class BookComment extends Base {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "book_id")
-    private long ID;
-
+    
     @Column(name = "rating")
     private float rating;
 
@@ -25,10 +21,10 @@ public class BookComment extends Base {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "book_id", referencedColumnName = "book_id")
+    @JoinColumn(name = "book_id", referencedColumnName = "id")
     private Book book;
 }
