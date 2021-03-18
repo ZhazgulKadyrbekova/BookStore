@@ -58,7 +58,7 @@ public class UserService {
 	    user.setActivationCode(UUID.randomUUID().toString());
 	    Role role = roleRepository.findByNameContainingIgnoreCase(user.getOccupation());
 	    if (role == null) {
-	        role = roleRepository.save(new Role(0, "ROLE_" + userDTO.getOccupation().toUpperCase()));
+	        role = roleRepository.save(new Role("ROLE_" + userDTO.getOccupation().toUpperCase()));
         }
 	    user.setRole(role);
         String message = "To activate your account visit link: register/activate/" + user.getActivationCode();
@@ -74,7 +74,7 @@ public class UserService {
         user.setEmail(userAdminDTO.getEmail());
         Role role = roleRepository.findByNameContainingIgnoreCase(userAdminDTO.getRole());
         if (role == null)
-            role = roleRepository.save(new Role(0, "ROLE_" + userAdminDTO.getRole().toUpperCase()));
+            role = roleRepository.save(new Role("ROLE_" + userAdminDTO.getRole().toUpperCase()));
         user.setRole(role);
 	    user.setActivationCode(UUID.randomUUID().toString());
         String message = "To activate your account visit link: register/activate/" + user.getActivationCode();

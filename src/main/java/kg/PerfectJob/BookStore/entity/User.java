@@ -16,11 +16,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 public class User extends Base {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private long ID;
-
+    
     @Column(name = "email", unique = true)
     private String email;
 
@@ -41,6 +37,6 @@ public class User extends Base {
     private String activationCode;
 
     @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "role_id")
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
 }
