@@ -13,11 +13,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "categories")
 public class Category extends Base {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
-    private long ID;
-
+   
     @Column
     private String name;
 }

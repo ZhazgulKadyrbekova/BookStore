@@ -7,13 +7,19 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@MappedSuperclass
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Base {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long ID;
+    
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
-    @Column(name = "is_deleted", precision = 0, nullable = false)
+    @Column(name = "deleted", precision = 0, nullable = false)
     private boolean deleted;
 
     @PrePersist

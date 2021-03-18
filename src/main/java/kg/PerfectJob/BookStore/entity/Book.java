@@ -13,11 +13,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "books")
 public class Book extends Base {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "book_id")
-    private long ID;
-
+    
     @Column(name = "name")
     private String name;
 
@@ -31,11 +27,11 @@ public class Book extends Base {
     private String type;
 
     @ManyToOne
-    @JoinColumn(name = "author_id", referencedColumnName = "author_id")
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
     private Author author;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "category_id")
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
 }
