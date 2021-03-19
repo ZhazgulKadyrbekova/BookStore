@@ -126,7 +126,7 @@ public class UserService {
         User user = userRepository.findByEmailIgnoreCase(userPasswordDTO.getEmail());
         if (user == null)
             throw new ResourceNotFoundException("User with email " + userPasswordDTO.getEmail() + " has not found");
-        if (encoder.matches(user.getPassword(), userPasswordDTO.getOldPassword())) {
+        if (encoder.matches(userPasswordDTO.getOldPassword(), user.getPassword())) {
             user.setPassword(encoder.encode(userPasswordDTO.getNewPassword()));
             return userRepository.save(user);
         }
