@@ -2,10 +2,13 @@ package kg.PerfectJob.BookStore.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,4 +37,7 @@ public class Book extends Base {
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
 
+    @OneToMany
+    @JoinColumn(name = "comments")
+    private List<BookComment> comments;
 }

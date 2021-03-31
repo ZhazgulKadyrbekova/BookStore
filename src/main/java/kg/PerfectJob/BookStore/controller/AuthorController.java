@@ -1,9 +1,9 @@
 package kg.PerfectJob.BookStore.controller;
 
 import kg.PerfectJob.BookStore.dto.AuthorDTO;
+import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.entity.Author;
 import kg.PerfectJob.BookStore.service.AuthorService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,8 +12,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/author")
 public class AuthorController {
-    @Autowired
-    private AuthorService authorService;
+    private final AuthorService authorService;
+
+    public AuthorController(AuthorService authorService) {
+        this.authorService = authorService;
+    }
 
     @GetMapping
     public List<Author> getAllAuthors() {
@@ -33,5 +36,20 @@ public class AuthorController {
     @GetMapping("/{id}")
     public Author getAuthorByID(@PathVariable Long id) {
         return authorService.getAuthorByID(id);
+    }
+
+    @PutMapping("/{id}")
+    public Author updateAuthorInfo(@PathVariable("id") Long authorID, @RequestBody AuthorDTO authorDTO) {
+        return authorService.update(authorID, authorDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseMessage deleteAuthorByID(@PathVariable("id") Long authorID) {
+        return new ResponseMessage(authorService.delete(authorID));
+    }
+
+    @PutMapping("/unarchive/{id}")
+    public Author unarchiveAuthorByID(@PathVariable("id") Long authorID) {
+        return authorService.unarchive(authorID);
     }
 }

@@ -1,9 +1,9 @@
 package kg.PerfectJob.BookStore.controller;
 
 import kg.PerfectJob.BookStore.dto.CategoryDTO;
+import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.entity.Category;
 import kg.PerfectJob.BookStore.service.CategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,8 +12,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/category")
 public class CategoryController {
-    @Autowired
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
+
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @GetMapping
     public List<Category> getAllCategories() {
@@ -33,5 +36,20 @@ public class CategoryController {
     @GetMapping("/{id}")
     public Category getCategoryByID(@PathVariable Long id) {
         return categoryService.getCategoryByID(id);
+    }
+
+    @PutMapping("/{id}")
+    public Category updateCategoryInfo(@PathVariable("id") Long categoryID, @RequestBody CategoryDTO categoryDTO) {
+        return categoryService.update(categoryID, categoryDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseMessage deleteCategoryByID(@PathVariable("id") Long categoryID) {
+        return new ResponseMessage(categoryService.delete(categoryID));
+    }
+
+    @PutMapping("/unarchive/{id}")
+    public Category unarchiveCategoryByID(@PathVariable("id") Long categoryID) {
+        return categoryService.unarchive(categoryID);
     }
 }

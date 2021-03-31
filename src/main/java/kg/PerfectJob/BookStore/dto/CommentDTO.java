@@ -8,10 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class BookCommentDTO {
+public class CommentDTO {
     private float rating;
     private String description;
-    private long userID;
-    private long bookID;
-
 }
