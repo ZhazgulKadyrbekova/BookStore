@@ -1,36 +1,51 @@
 package kg.PerfectJob.BookStore.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.UserAdminDTO;
 import kg.PerfectJob.BookStore.dto.UserDTO;
 import kg.PerfectJob.BookStore.dto.UserPasswordDTO;
 import kg.PerfectJob.BookStore.dto.UserSaveAdminDTO;
+import kg.PerfectJob.BookStore.entity.Image;
 import kg.PerfectJob.BookStore.entity.Role;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.exception.InvalidDataException;
 import kg.PerfectJob.BookStore.exception.InvalidInputException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
+import kg.PerfectJob.BookStore.repository.ImageRepository;
 import kg.PerfectJob.BookStore.repository.RoleRepository;
 import kg.PerfectJob.BookStore.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-    @Autowired
-    private MailService mailService;
+    private final MailService mailService;
 
-    @Autowired
-    private PasswordEncoder encoder;
+    private final PasswordEncoder encoder;
+
+    private final ImageRepository imageRepository;
+
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, MailService mailService, PasswordEncoder encoder, ImageRepository imageRepository) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.mailService = mailService;
+        this.encoder = encoder;
+        this.imageRepository = imageRepository;
+    }
 
     public User findUserByID(long id) {
         return userRepository.findById(id)
@@ -38,7 +53,7 @@ public class UserService {
     }
 
     public User findUserByName(String name) {
-        return null;
+        return userRepository.findByNameContainingIgnoreCase(name);
     }
 
     public User findUserByEmail(String email) {
@@ -132,5 +147,39 @@ public class UserService {
         }
         else
             throw new InvalidDataException("Entered current password is not valid");
+    }
+
+    public User setImage(MultipartFile multipartFile, String userEmail) throws IOException {
+
+        final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/"; //в конце добавляем '/'
+        Image image = new Image();
+        File file;
+        try{
+            file = Files.createTempFile(System.currentTimeMillis() + "",
+                    Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().length()-4)) // .jpg
+                    .toFile();
+            multipartFile.transferTo(file);
+
+            Cloudinary cloudinary = new Cloudinary(urlKey);
+            Map uploadResult = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
+            image.setName((String) uploadResult.get("public_id"));
+            image.setUrl((String) uploadResult.get("url"));
+            image.setFormat((String) uploadResult.get("format"));
+            imageRepository.save(image);
+
+            User user = userRepository.findByEmailIgnoreCase(userEmail);
+            user.setImage(image);
+            return userRepository.save(user);
+        } catch (IOException e){
+            throw new IOException("User was unable to set a image");
+        }
+    }
+
+    public String deleteImage(String email) {
+        User user = userRepository.findByEmailIgnoreCase(email);
+        user.setImage(null);
+        userRepository.save(user);
+
+        return "image successfully deleted";
     }
 }

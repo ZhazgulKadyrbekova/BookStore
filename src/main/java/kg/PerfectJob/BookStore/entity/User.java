@@ -39,4 +39,8 @@ public class User extends Base {
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
+
+    @OneToOne
+//    @Column(name = "image_id")
+    private Image image;
 }
