@@ -9,6 +9,5 @@ import java.util.List;
 
 @Repository
 public interface BookCommentRepository extends JpaRepository<BookComment, Long> {
-    List<BookComment> findAllByBook(Book book);
     List<BookComment> findAllByDeleted(boolean deleted);
 }
