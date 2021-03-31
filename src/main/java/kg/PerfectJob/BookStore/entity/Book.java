@@ -40,4 +40,8 @@ public class Book extends Base {
     @OneToMany
     @JoinColumn(name = "comments")
     private List<BookComment> comments;
+
+    @OneToOne
+//    @Column(name = "image_id")
+    private Image image;
 }

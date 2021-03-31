@@ -1,14 +1,13 @@
 package kg.PerfectJob.BookStore.controller;
 
+import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.dto.UserPasswordDTO;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -40,5 +39,16 @@ public class UserController {
     @GetMapping("/profile")
     public User getProfileInfo(Principal principal) {
         return userService.findUserByEmail(principal.getName());
+    }
+
+    @PutMapping("/image")
+    public User setImage(@RequestParam("file") MultipartFile file, Principal principal)
+        throws IOException {
+        return userService.setImage(file, principal.getName());
+    }
+
+    @DeleteMapping("/image")
+    public ResponseMessage deleteImage(Principal principal) {
+        return new ResponseMessage(userService.deleteImage(principal.getName()));
     }
 }
