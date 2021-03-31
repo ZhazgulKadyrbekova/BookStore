@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 public class BookDTO {
     private String name;
     private String url;
-    private String type;
     private long authorID;
     private long categoryID;
 }

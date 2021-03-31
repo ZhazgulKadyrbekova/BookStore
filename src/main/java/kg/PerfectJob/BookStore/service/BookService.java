@@ -39,11 +39,14 @@ public class BookService {
     }
 
     public Book dtoToBook(Book book, BookDTO bookDTO) {
+
         book.setName(bookDTO.getName());
         book.setUrl(bookDTO.getUrl());
-        book.setType(bookDTO.getType());
-        if (bookDTO.getAuthorID() != 0)
-            book.setAuthor(authorService.getAuthorByID(bookDTO.getAuthorID()));
+        if (bookDTO.getAuthorID() != 0) {
+            Author author = authorService.getAuthorByID(bookDTO.getAuthorID());
+            book.setAuthor(author);
+            book.setType(author.getType());
+        }
         if (bookDTO.getCategoryID() != 0)
             book.setCategory(categoryService.getCategoryByID(bookDTO.getCategoryID()));
         return book;

@@ -35,4 +35,8 @@ public class Author extends Base {
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
+
+    @OneToOne
+//    @Column(name = "image_id")
+    private Image image;
 }
