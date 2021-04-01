@@ -15,6 +15,7 @@ import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.repository.ImageRepository;
 import kg.PerfectJob.BookStore.repository.RoleRepository;
 import kg.PerfectJob.BookStore.repository.UserRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,21 +31,20 @@ import java.util.UUID;
 @Service
 public class UserService {
     private final UserRepository userRepository;
-
     private final RoleRepository roleRepository;
-
     private final MailService mailService;
-
     private final PasswordEncoder encoder;
-
     private final ImageRepository imageRepository;
+    private final AuthorService authorService;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, MailService mailService, PasswordEncoder encoder, ImageRepository imageRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, MailService mailService, PasswordEncoder encoder,
+                       ImageRepository imageRepository, @Lazy AuthorService authorService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.mailService = mailService;
         this.encoder = encoder;
         this.imageRepository = imageRepository;
+        this.authorService = authorService;
     }
 
     public User findUserByID(long id) {
@@ -169,9 +169,11 @@ public class UserService {
 
             User user = userRepository.findByEmailIgnoreCase(userEmail);
             user.setImage(image);
-            return userRepository.save(user);
+            userRepository.save(user);
+            authorService.setImage(image, user);
+            return user;
         } catch (IOException e){
-            throw new IOException("User was unable to set a image");
+            throw new IOException("Unable to set image to user\n" + e.getMessage());
         }
     }
 
@@ -179,7 +181,8 @@ public class UserService {
         User user = userRepository.findByEmailIgnoreCase(email);
         user.setImage(null);
         userRepository.save(user);
+        authorService.deleteImage(user);
 
-        return "image successfully deleted";
+        return "Image successfully deleted";
     }
 }
