@@ -5,7 +5,9 @@ import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.entity.Author;
 import kg.PerfectJob.BookStore.service.AuthorService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin
@@ -51,5 +53,16 @@ public class AuthorController {
     @PutMapping("/unarchive/{id}")
     public Author unarchiveAuthorByID(@PathVariable("id") Long authorID) {
         return authorService.unarchive(authorID);
+    }
+
+    @PutMapping("/{authorID}/image")
+    public Author setImage(@PathVariable Long authorID, @RequestParam("file") MultipartFile file)
+            throws IOException {
+        return authorService.setImage(authorID, file);
+    }
+
+    @DeleteMapping("/{authorID}/image")
+    public ResponseMessage deleteImage(@PathVariable Long authorID) {
+        return new ResponseMessage(authorService.deleteImage(authorID));
     }
 }

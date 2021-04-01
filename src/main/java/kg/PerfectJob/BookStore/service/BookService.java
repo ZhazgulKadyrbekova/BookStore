@@ -19,7 +19,7 @@ public class BookService {
     private final CategoryService categoryService;
     private final BookCommentService commentService;
 
-    public BookService(BookRepository bookRepository, AuthorService authorService, @Lazy CategoryService categoryService, @Lazy BookCommentService commentService) {
+    public BookService(BookRepository bookRepository, @Lazy AuthorService authorService, @Lazy CategoryService categoryService, @Lazy BookCommentService commentService) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.categoryService = categoryService;
