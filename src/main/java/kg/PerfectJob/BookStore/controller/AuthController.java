@@ -4,7 +4,6 @@ import kg.PerfectJob.BookStore.dto.*;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.service.UserService;
 import kg.PerfectJob.BookStore.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -14,15 +13,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/register")
 public class AuthController {
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/user")
