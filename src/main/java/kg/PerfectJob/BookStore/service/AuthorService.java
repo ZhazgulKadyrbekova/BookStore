@@ -95,10 +95,10 @@ public class AuthorService {
 
     public void setImage(Image image, User user) {
         Author author = authorRepository.findAuthorByUser(user);
-	if (author != null) {
-		author.setImage(image);
-		authorRepository.save(author);
-	}
+        if (author != null) {
+            author.setImage(image);
+            authorRepository.save(author);
+        }
     }
 
     public Author setImage(Long authorID, MultipartFile multipartFile) throws IOException {

@@ -1,7 +1,7 @@
 package kg.PerfectJob.BookStore.controller;
 
-import kg.PerfectJob.BookStore.dto.CommentDTO;
 import kg.PerfectJob.BookStore.dto.BookDTO;
+import kg.PerfectJob.BookStore.dto.CommentDTO;
 import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.entity.Book;
 import kg.PerfectJob.BookStore.entity.BookComment;
@@ -9,7 +9,9 @@ import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.service.BookCommentService;
 import kg.PerfectJob.BookStore.service.BookService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 
@@ -92,5 +94,16 @@ public class BookController {
     @PutMapping("/unarchive/{id}")
     public Book unarchiveBookByID(@PathVariable("id") Long bookID) {
         return bookService.unarchive(bookID);
+    }
+
+    @PutMapping("/{bookID}/image")
+    public Book setImage(@PathVariable Long bookID, @RequestParam("file") MultipartFile file)
+            throws IOException {
+        return bookService.setImage(bookID, file);
+    }
+
+    @DeleteMapping("/{bookID}/image")
+    public ResponseMessage deleteImage(@PathVariable Long bookID) {
+        return new ResponseMessage(bookService.deleteImage(bookID));
     }
 }
