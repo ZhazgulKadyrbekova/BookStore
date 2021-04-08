@@ -1,6 +1,7 @@
 package kg.PerfectJob.BookStore.controller;
 
 import kg.PerfectJob.BookStore.dto.ResponseMessage;
+import kg.PerfectJob.BookStore.dto.UserEditDTO;
 import kg.PerfectJob.BookStore.dto.UserPasswordDTO;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.service.UserService;
@@ -39,6 +40,11 @@ public class UserController {
     @GetMapping("/profile")
     public User getProfileInfo(Principal principal) {
         return userService.findUserByEmail(principal.getName());
+    }
+
+    @PutMapping("/profile")
+    public User updateProfileInfo(Principal principal, @RequestBody UserEditDTO userEditDTO) {
+        return userService.updateUserByEmail(principal.getName(), userEditDTO);
     }
 
     @PutMapping("/image")
