@@ -2,10 +2,7 @@ package kg.PerfectJob.BookStore.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import kg.PerfectJob.BookStore.dto.UserAdminDTO;
-import kg.PerfectJob.BookStore.dto.UserDTO;
-import kg.PerfectJob.BookStore.dto.UserPasswordDTO;
-import kg.PerfectJob.BookStore.dto.UserSaveAdminDTO;
+import kg.PerfectJob.BookStore.dto.*;
 import kg.PerfectJob.BookStore.entity.Image;
 import kg.PerfectJob.BookStore.entity.Role;
 import kg.PerfectJob.BookStore.entity.User;
@@ -184,5 +181,11 @@ public class UserService {
         authorService.deleteImage(user);
 
         return "Image successfully deleted";
+    }
+
+    public User updateUserByEmail(String email, UserEditDTO userEditDTO) {
+        User user = this.findUserByEmail(email);
+        user.setName(userEditDTO.getName() + " " + userEditDTO.getSurname());
+        return userRepository.save(user);
     }
 }
