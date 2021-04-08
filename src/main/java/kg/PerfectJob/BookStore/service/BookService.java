@@ -1,16 +1,22 @@
 package kg.PerfectJob.BookStore.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.BookDTO;
-import kg.PerfectJob.BookStore.entity.Author;
-import kg.PerfectJob.BookStore.entity.Book;
-import kg.PerfectJob.BookStore.entity.BookComment;
-import kg.PerfectJob.BookStore.entity.Category;
+import kg.PerfectJob.BookStore.entity.*;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.repository.BookRepository;
+import kg.PerfectJob.BookStore.repository.ImageRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class BookService {
@@ -18,12 +24,14 @@ public class BookService {
     private final AuthorService authorService;
     private final CategoryService categoryService;
     private final BookCommentService commentService;
+    private final ImageRepository imageRepository;
 
-    public BookService(BookRepository bookRepository, @Lazy AuthorService authorService, @Lazy CategoryService categoryService, @Lazy BookCommentService commentService) {
+    public BookService(BookRepository bookRepository, @Lazy AuthorService authorService, @Lazy CategoryService categoryService, @Lazy BookCommentService commentService, ImageRepository imageRepository) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.categoryService = categoryService;
         this.commentService = commentService;
+        this.imageRepository = imageRepository;
     }
 
     public Book save(Book book) {
@@ -105,4 +113,40 @@ public class BookService {
         book.setDeleted(!book.isDeleted());
         return bookRepository.save(book);
     }
+
+
+    public Book setImage(Long bookID, MultipartFile multipartFile) throws IOException {
+
+        final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/"; //в конце добавляем '/'
+        Image image = new Image();
+        File file;
+        try{
+            file = Files.createTempFile(System.currentTimeMillis() + "",
+                    Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().length()-4)) // .jpg
+                    .toFile();
+            multipartFile.transferTo(file);
+
+            Cloudinary cloudinary = new Cloudinary(urlKey);
+            Map uploadResult = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
+            image.setName((String) uploadResult.get("public_id"));
+            image.setUrl((String) uploadResult.get("url"));
+            image.setFormat((String) uploadResult.get("format"));
+            imageRepository.save(image);
+
+            Book book = this.getBookByID(bookID);
+            book.setImage(image);
+            return bookRepository.save(book);
+        } catch (IOException e){
+            throw new IOException("Unable to set image to book\n" + e.getMessage());
+        }
+    }
+
+
+    public String deleteImage(Long bookID) {
+        Book book = this.getBookByID(bookID);
+        book.setImage(null);
+        bookRepository.save(book);
+        return "Image successfully deleted";
+    }
+
 }
