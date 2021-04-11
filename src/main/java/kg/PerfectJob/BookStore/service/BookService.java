@@ -4,11 +4,13 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.BookDTO;
 import kg.PerfectJob.BookStore.entity.*;
+import kg.PerfectJob.BookStore.exception.InvalidInputException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.repository.BookRepository;
 import kg.PerfectJob.BookStore.repository.ImageRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -49,7 +51,6 @@ public class BookService {
     public Book dtoToBook(Book book, BookDTO bookDTO) {
 
         book.setName(bookDTO.getName());
-        book.setUrl(bookDTO.getUrl());
         if (bookDTO.getAuthorID() != 0) {
             Author author = authorService.getAuthorByID(bookDTO.getAuthorID());
             book.setAuthor(author);
@@ -147,6 +148,21 @@ public class BookService {
         book.setImage(null);
         bookRepository.save(book);
         return "Image successfully deleted";
+    }
+
+    public Book setData(MultipartFile file, long bookID) {
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+
+        try {
+            if (fileName.contains("..")) {
+                throw new InvalidInputException("Sorry! Filename contains invalid path sequence " + fileName);
+            }
+            Book book = this.getBookByID(bookID);
+            book.setData(file.getBytes());
+            return bookRepository.save(book);
+        } catch (IOException e) {
+            throw new InvalidInputException("Could not store file " + fileName + ". Please, try again!" + e.getMessage());
+        }
     }
 
 }

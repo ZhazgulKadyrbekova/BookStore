@@ -23,8 +23,8 @@ public class Book extends Base {
     @Column(name = "average_rating")
     private float averageRating;
 
-    @Column(name = "url")
-    private String url;
+    @Lob
+    private byte[] data;
 
     @Column(name = "type")
     private String type;
