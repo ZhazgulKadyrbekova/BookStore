@@ -8,8 +8,14 @@ import kg.PerfectJob.BookStore.entity.BookComment;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.service.BookCommentService;
 import kg.PerfectJob.BookStore.service.BookService;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -45,6 +51,22 @@ public class BookController {
     @GetMapping("/{id}")
     public Book getBookByID(@PathVariable Long id) {
         return bookService.getBookByID(id);
+    }
+
+    @PutMapping("/{bookID}/data")
+    public ResponseMessage uploadFile(@RequestBody MultipartFile file, @PathVariable Long bookID) {
+        bookService.setData(file, bookID);
+        return new ResponseMessage("File has been saved");
+    }
+
+    @GetMapping("/{bookID}/data")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long bookID) {
+        Book book = bookService.getBookByID(bookID);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + book.getName())
+                .contentType(MediaType.parseMediaType("application/pdf"))
+                .body(new ByteArrayResource(book.getData()));
     }
 
     @PostMapping("/{bookID}/comment")
