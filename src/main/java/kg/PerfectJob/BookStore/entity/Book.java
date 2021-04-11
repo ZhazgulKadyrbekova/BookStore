@@ -1,5 +1,6 @@
 package kg.PerfectJob.BookStore.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,6 +24,7 @@ public class Book extends Base {
     @Column(name = "average_rating")
     private float averageRating;
 
+    @JsonIgnore
     @Lob
     private byte[] data;
 
@@ -42,6 +44,5 @@ public class Book extends Base {
     private List<BookComment> comments;
 
     @OneToOne
-//    @Column(name = "image_id")
     private Image image;
 }
