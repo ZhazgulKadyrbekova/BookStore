@@ -28,6 +28,9 @@ public class Book extends Base {
     @Lob
     private byte[] data;
 
+    @Column(name = "confirmed")
+    private boolean confirmed;
+
     @Column(name = "type")
     private String type;
 
