@@ -5,11 +5,11 @@ import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.AuthorDTO;
 import kg.PerfectJob.BookStore.entity.Author;
 import kg.PerfectJob.BookStore.entity.Book;
-import kg.PerfectJob.BookStore.entity.Image;
+import kg.PerfectJob.BookStore.entity.Media;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.repository.AuthorRepository;
-import kg.PerfectJob.BookStore.repository.ImageRepository;
+import kg.PerfectJob.BookStore.repository.MediaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,9 +25,10 @@ public class AuthorService {
     private final AuthorRepository authorRepository;
     private final UserService userService;
     private final BookService bookService;
-    private final ImageRepository imageRepository;
+    private final MediaRepository imageRepository;
 
-    public AuthorService(AuthorRepository authorRepository, UserService userService, BookService bookService, ImageRepository imageRepository) {
+    public AuthorService(AuthorRepository authorRepository, UserService userService, BookService bookService,
+                         MediaRepository imageRepository) {
         this.authorRepository = authorRepository;
         this.userService = userService;
         this.bookService = bookService;
@@ -93,7 +94,7 @@ public class AuthorService {
         return authorRepository.save(author);
     }
 
-    public void setImage(Image image, User user) {
+    public void setImage(Media image, User user) {
         Author author = authorRepository.findAuthorByUser(user);
         if (author != null) {
             author.setImage(image);
@@ -104,7 +105,7 @@ public class AuthorService {
     public Author setImage(Long authorID, MultipartFile multipartFile) throws IOException {
 
         final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/"; //в конце добавляем '/'
-        Image image = new Image();
+        Media image = new Media();
         File file;
         try{
             file = Files.createTempFile(System.currentTimeMillis() + "",

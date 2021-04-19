@@ -41,6 +41,5 @@ public class User extends Base {
     private Role role;
 
     @OneToOne
-//    @Column(name = "image_id")
-    private Image image;
+    private Media image;
 }
