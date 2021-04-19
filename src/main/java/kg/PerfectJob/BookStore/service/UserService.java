@@ -3,13 +3,13 @@ package kg.PerfectJob.BookStore.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.*;
-import kg.PerfectJob.BookStore.entity.Image;
+import kg.PerfectJob.BookStore.entity.Media;
 import kg.PerfectJob.BookStore.entity.Role;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.exception.InvalidDataException;
 import kg.PerfectJob.BookStore.exception.InvalidInputException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
-import kg.PerfectJob.BookStore.repository.ImageRepository;
+import kg.PerfectJob.BookStore.repository.MediaRepository;
 import kg.PerfectJob.BookStore.repository.RoleRepository;
 import kg.PerfectJob.BookStore.repository.UserRepository;
 import org.springframework.context.annotation.Lazy;
@@ -31,11 +31,11 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final MailService mailService;
     private final PasswordEncoder encoder;
-    private final ImageRepository imageRepository;
+    private final MediaRepository imageRepository;
     private final AuthorService authorService;
 
     public UserService(UserRepository userRepository, RoleRepository roleRepository, MailService mailService, PasswordEncoder encoder,
-                       ImageRepository imageRepository, @Lazy AuthorService authorService) {
+                       MediaRepository imageRepository, @Lazy AuthorService authorService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.mailService = mailService;
@@ -149,7 +149,7 @@ public class UserService {
     public User setImage(MultipartFile multipartFile, String userEmail) throws IOException {
 
         final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/"; //в конце добавляем '/'
-        Image image = new Image();
+        Media image = new Media();
         File file;
         try{
             file = Files.createTempFile(System.currentTimeMillis() + "",

@@ -24,13 +24,6 @@ public class Book extends Base {
     @Column(name = "average_rating")
     private float averageRating;
 
-    @JsonIgnore
-    @Lob
-    private byte[] data;
-
-    @Column(name = "confirmed")
-    private boolean confirmed;
-
     @Column(name = "type")
     private String type;
 
@@ -47,5 +40,11 @@ public class Book extends Base {
     private List<BookComment> comments;
 
     @OneToOne
-    private Image image;
+    private Media image;
+
+    @OneToOne
+    private Media data;
+
+    @Column(name = "confirmed")
+    private boolean confirmed;
 }

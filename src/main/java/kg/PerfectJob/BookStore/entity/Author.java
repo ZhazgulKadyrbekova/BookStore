@@ -37,6 +37,5 @@ public class Author extends Base {
     private User user;
 
     @OneToOne
-//    @Column(name = "image_id")
-    private Image image;
+    private Media image;
 }
