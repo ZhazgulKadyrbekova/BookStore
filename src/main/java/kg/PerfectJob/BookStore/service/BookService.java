@@ -4,13 +4,11 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.BookDTO;
 import kg.PerfectJob.BookStore.entity.*;
-import kg.PerfectJob.BookStore.exception.InvalidInputException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.repository.BookRepository;
-import kg.PerfectJob.BookStore.repository.ImageRepository;
+import kg.PerfectJob.BookStore.repository.MediaRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -26,12 +24,12 @@ public class BookService {
     private final AuthorService authorService;
     private final CategoryService categoryService;
     private final BookCommentService commentService;
-    private final ImageRepository imageRepository;
+    private final MediaRepository imageRepository;
     private final MailService mailService;
 
     public BookService(BookRepository bookRepository, @Lazy AuthorService authorService,
                        @Lazy CategoryService categoryService, @Lazy BookCommentService commentService,
-                       ImageRepository imageRepository, MailService mailService) {
+                       MediaRepository imageRepository, MailService mailService) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.categoryService = categoryService;
@@ -118,11 +116,10 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-
     public Book setImage(Long bookID, MultipartFile multipartFile) throws IOException {
 
         final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/"; //в конце добавляем '/'
-        Image image = new Image();
+        Media image = new Media();
         File file;
         try{
             file = Files.createTempFile(System.currentTimeMillis() + "",
@@ -145,7 +142,6 @@ public class BookService {
         }
     }
 
-
     public String deleteImage(Long bookID) {
         Book book = this.getBookByID(bookID);
         book.setImage(null);
@@ -153,18 +149,31 @@ public class BookService {
         return "Image successfully deleted";
     }
 
-    public void setData(MultipartFile file, long bookID) {
-        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+    public Book setData(Long bookID, MultipartFile multipartFile) throws IOException {
 
-        try {
-            if (fileName.contains("..")) {
-                throw new InvalidInputException("Sorry! Filename contains invalid path sequence " + fileName);
-            }
+        final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/";
+        Media data = new Media();
+        File file;
+        try{
+            file = Files.createTempFile(System.currentTimeMillis() + "",
+                    Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().length()-4)) // .jpg
+                    .toFile();
+            multipartFile.transferTo(file);
+
+            Cloudinary cloudinary = new Cloudinary(urlKey);
+            Map uploadResult = cloudinary.uploader().upload(file, ObjectUtils
+                    .emptyMap());
+            System.out.println(uploadResult);
+            data.setName((String) uploadResult.get("public_id"));
+            data.setUrl((String) uploadResult.get("url"));
+            data.setFormat((String) uploadResult.get("format"));
+            imageRepository.save(data);
+
             Book book = this.getBookByID(bookID);
-            book.setData(file.getBytes());
-            bookRepository.save(book);
-        } catch (IOException e) {
-            throw new InvalidInputException("Could not store file " + fileName + ". Please, try again!" + e.getMessage());
+            book.setData(data);
+            return bookRepository.save(book);
+        } catch (IOException e){
+            throw new IOException("Unable to set data to book\n" + e.getMessage());
         }
     }
 
