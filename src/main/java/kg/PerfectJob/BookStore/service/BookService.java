@@ -27,13 +27,17 @@ public class BookService {
     private final CategoryService categoryService;
     private final BookCommentService commentService;
     private final ImageRepository imageRepository;
+    private final MailService mailService;
 
-    public BookService(BookRepository bookRepository, @Lazy AuthorService authorService, @Lazy CategoryService categoryService, @Lazy BookCommentService commentService, ImageRepository imageRepository) {
+    public BookService(BookRepository bookRepository, @Lazy AuthorService authorService,
+                       @Lazy CategoryService categoryService, @Lazy BookCommentService commentService,
+                       ImageRepository imageRepository, MailService mailService) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.categoryService = categoryService;
         this.commentService = commentService;
         this.imageRepository = imageRepository;
+        this.mailService = mailService;
     }
 
     public Book save(Book book) {
@@ -49,7 +53,6 @@ public class BookService {
     }
 
     public Book dtoToBook(Book book, BookDTO bookDTO) {
-
         book.setName(bookDTO.getName());
         if (bookDTO.getAuthorID() != 0) {
             Author author = authorService.getAuthorByID(bookDTO.getAuthorID());
@@ -150,8 +153,8 @@ public class BookService {
         return "Image successfully deleted";
     }
 
-    public Book setData(MultipartFile file, long bookID) {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+    public void setData(MultipartFile file, long bookID) {
+        String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
         try {
             if (fileName.contains("..")) {
@@ -159,10 +162,38 @@ public class BookService {
             }
             Book book = this.getBookByID(bookID);
             book.setData(file.getBytes());
-            return bookRepository.save(book);
+            bookRepository.save(book);
         } catch (IOException e) {
             throw new InvalidInputException("Could not store file " + fileName + ". Please, try again!" + e.getMessage());
         }
     }
 
+    public List<Book> getBooksByConfirmation(boolean confirmed) {
+        return bookRepository.findAllByConfirmed(confirmed);
+    }
+
+    public Book confirmBookByID(long bookID) {
+        Book book = getBookByID(bookID);
+        if (book.isConfirmed())
+            throw new ResourceNotFoundException("Book with ID " + bookID + " is already confirmed");
+        book.setConfirmed(true);
+        return bookRepository.save(book);
+    }
+
+    public String deleteBookByID(long bookID, String description) {
+        Book book = getBookByID(bookID);
+        if (book.isConfirmed())
+            throw new ResourceNotFoundException("Book with ID " + bookID + " is already confirmed");
+        bookRepository.delete(book);
+        String userEmail = null;
+        if (book.getAuthor() != null && book.getAuthor().getUser() != null)
+            userEmail = book.getAuthor().getUser().getEmail();
+        String text = "Your request was rejected\nDescription: " + description;
+        if (mailService.send(userEmail, "Rejection of book uploading", text))
+            return "Book with ID " + bookID + " has been deleted. User " + userEmail
+                    + " will receive mail with description of rejection";
+        else
+            return "Book with ID " + bookID + " has been deleted. " +
+                    "Errors with sending mail with description to user " + userEmail;
+    }
 }

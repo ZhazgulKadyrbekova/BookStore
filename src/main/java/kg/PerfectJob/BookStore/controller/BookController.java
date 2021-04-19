@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -128,4 +127,20 @@ public class BookController {
     public ResponseMessage deleteImage(@PathVariable Long bookID) {
         return new ResponseMessage(bookService.deleteImage(bookID));
     }
+
+    @GetMapping("/confirmed/{confirmed}")
+    public List<Book> getBooksByConfirmation(@PathVariable Boolean confirmed) {
+        return bookService.getBooksByConfirmation(confirmed);
+    }
+
+    @PutMapping("/confirm/{bookID}")
+    public Book confirmBookByID(@PathVariable Long bookID) {
+        return bookService.confirmBookByID(bookID);
+    }
+
+    @DeleteMapping("/confirm/{bookID}")
+    public ResponseMessage deleteBookByID(@PathVariable Long bookID, @RequestParam String description) {
+        return new ResponseMessage(bookService.deleteBookByID(bookID, description));
+    }
+
 }
