@@ -112,6 +112,12 @@ public class UserService {
             return "Be sure to enter valid activation code";
         user.setActivationCode(null);
         user.setActive(true);
+        if (user.getOccupation().equals("writer")) {
+            AuthorDTO author = new AuthorDTO();
+            author.setName(user.getName());
+            author.setType("NEW");
+            authorService.create(author);
+        }
         userRepository.save(user);
         return "Account has been activated";
     }
