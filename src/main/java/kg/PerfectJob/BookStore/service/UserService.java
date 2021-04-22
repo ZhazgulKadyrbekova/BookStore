@@ -6,9 +6,10 @@ import kg.PerfectJob.BookStore.dto.*;
 import kg.PerfectJob.BookStore.entity.Media;
 import kg.PerfectJob.BookStore.entity.Role;
 import kg.PerfectJob.BookStore.entity.User;
-import kg.PerfectJob.BookStore.exception.InvalidDataException;
+import kg.PerfectJob.BookStore.exception.AccessDeniedException;
 import kg.PerfectJob.BookStore.exception.InvalidInputException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
+import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.repository.MediaRepository;
 import kg.PerfectJob.BookStore.repository.RoleRepository;
 import kg.PerfectJob.BookStore.repository.UserRepository;
@@ -81,7 +82,13 @@ public class UserService {
         return "We could not send activation code. Try again later.";
     }
 
-    public String createAdmin(UserAdminDTO userAdminDTO) {
+    public String createAdmin(UserAdminDTO userAdminDTO, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         User user = new User();
         user.setEmail(userAdminDTO.getEmail());
         Role role = roleRepository.findByNameContainingIgnoreCase(userAdminDTO.getRole());
@@ -97,7 +104,13 @@ public class UserService {
         return "We could not send activation code. Try again later.";
     }
 
-    public User saveAdmin(UserSaveAdminDTO userSaveAdminDTO) {
+    public User saveAdmin(UserSaveAdminDTO userSaveAdminDTO, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         User user = userRepository.findByEmailIgnoreCase(userSaveAdminDTO.getEmail());
         if (!user.isActive())
             throw new InvalidInputException("Be sure to activate account at first");
@@ -140,7 +153,12 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User changePassword(UserPasswordDTO userPasswordDTO) {
+    public User changePassword(UserPasswordDTO userPasswordDTO, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        if (!email.equals(userPasswordDTO.getEmail())) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         User user = userRepository.findByEmailIgnoreCase(userPasswordDTO.getEmail());
         if (user == null)
             throw new ResourceNotFoundException("User with email " + userPasswordDTO.getEmail() + " has not found");
@@ -149,7 +167,7 @@ public class UserService {
             return userRepository.save(user);
         }
         else
-            throw new InvalidDataException("Entered current password is not valid");
+            throw new AccessDeniedException("Entered current password is not valid");
     }
 
     public User setImage(MultipartFile multipartFile, String userEmail) throws IOException {
@@ -181,6 +199,8 @@ public class UserService {
     }
 
     public String deleteImage(String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
         User user = userRepository.findByEmailIgnoreCase(email);
         user.setImage(null);
         userRepository.save(user);
@@ -190,6 +210,8 @@ public class UserService {
     }
 
     public User updateUserByEmail(String email, UserEditDTO userEditDTO) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
         User user = this.findUserByEmail(email);
         user.setName(userEditDTO.getName() + " " + userEditDTO.getSurname());
         return userRepository.save(user);
