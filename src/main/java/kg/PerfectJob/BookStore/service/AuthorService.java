@@ -7,9 +7,12 @@ import kg.PerfectJob.BookStore.entity.Author;
 import kg.PerfectJob.BookStore.entity.Book;
 import kg.PerfectJob.BookStore.entity.Media;
 import kg.PerfectJob.BookStore.entity.User;
+import kg.PerfectJob.BookStore.exception.AccessDeniedException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
+import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.repository.AuthorRepository;
 import kg.PerfectJob.BookStore.repository.MediaRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,16 +26,16 @@ import java.util.Objects;
 @Service
 public class AuthorService {
     private final AuthorRepository authorRepository;
-    private final UserService userService;
     private final BookService bookService;
     private final MediaRepository imageRepository;
+    private final UserService userService;
 
-    public AuthorService(AuthorRepository authorRepository, UserService userService, BookService bookService,
-                         MediaRepository imageRepository) {
+    public AuthorService(AuthorRepository authorRepository, BookService bookService,
+                         MediaRepository imageRepository, @Lazy UserService userService) {
         this.authorRepository = authorRepository;
-        this.userService = userService;
         this.bookService = bookService;
         this.imageRepository = imageRepository;
+        this.userService = userService;
     }
 
     public List<Author> getAll() {
@@ -48,19 +51,25 @@ public class AuthorService {
         author.setType(authorDTO.getType());
         author.setBirthDate(authorDTO.getBirthDate());
         author.setBiography(authorDTO.getBiography());
-        if (authorDTO.getUserID() != 0) {
-            User user = userService.findUserByID(authorDTO.getUserID());
-            if (user == null)
-                throw new ResourceNotFoundException("User with ID " + authorDTO.getUserID() + " has not found");
-            author.setUser(user);
-        }
 
         return author;
     }
 
-    public Author create(AuthorDTO authorDTO) {
+    public Author create(AuthorDTO authorDTO, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
+
         Author author = dtoToAuthor(new Author(), authorDTO);
         return authorRepository.save(author);
+    }
+
+    public void create(AuthorDTO authorDTO) {
+        Author author = dtoToAuthor(new Author(), authorDTO);
+        authorRepository.save(author);
     }
 
     public Author getAuthorByID(long authorID) {
@@ -68,12 +77,24 @@ public class AuthorService {
                 .orElseThrow(() -> new ResourceNotFoundException("Author with ID " + authorID + " has not found"));
     }
 
-    public Author update(long authorID, AuthorDTO authorDTO) {
+    public Author update(long authorID, AuthorDTO authorDTO, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         Author author = dtoToAuthor(this.getAuthorByID(authorID), authorDTO);
         return authorRepository.save(author);
     }
 
-    public String delete(long authorID) {
+    public String delete(long authorID, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         Author author = this.getAuthorByID(authorID);
         if (author.isDeleted()) {
             for (Book book : bookService.getAllBooksByAuthor(author)) {
@@ -128,7 +149,6 @@ public class AuthorService {
         }
     }
 
-
     public void deleteImage(User user) {
         Author author = authorRepository.findAuthorByUser(user);
         author.setImage(null);
@@ -142,3 +162,9 @@ public class AuthorService {
         return "Image successfully deleted";
     }
 }
+
+/*
+2021-04-22 23:31:37.454 ERROR 5249 --- [nio-8080-exec-3] o.a.c.c.C.[.[.[/].[dispatcherServlet]    : Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception
+
+io.jsonwebtoken.SignatureException: JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.
+*/
