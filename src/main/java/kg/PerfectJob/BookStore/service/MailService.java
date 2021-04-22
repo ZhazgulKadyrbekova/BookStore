@@ -1,6 +1,5 @@
 package kg.PerfectJob.BookStore.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -10,11 +9,14 @@ import java.util.Objects;
 
 @Service
 public class MailService {
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
 
-    @Autowired
-    private Environment environment;
+    private final Environment environment;
+
+    public MailService(JavaMailSender javaMailSender, Environment environment) {
+        this.javaMailSender = javaMailSender;
+        this.environment = environment;
+    }
 
     public boolean send(String toEmail, String subject, String text) {
         try {

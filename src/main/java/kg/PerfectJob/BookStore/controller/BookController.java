@@ -97,11 +97,6 @@ public class BookController {
         return new ResponseMessage(bookService.delete(bookID));
     }
 
-    @PutMapping("/unarchive/{id}")
-    public Book unarchiveBookByID(@PathVariable("id") Long bookID) {
-        return bookService.unarchive(bookID);
-    }
-
     @PutMapping("/{bookID}/image")
     public Book setImage(@PathVariable Long bookID, @RequestParam("file") MultipartFile file)
             throws IOException {

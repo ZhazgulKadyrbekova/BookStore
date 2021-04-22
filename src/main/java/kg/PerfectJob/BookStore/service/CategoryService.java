@@ -46,22 +46,11 @@ public class CategoryService {
 
     public String delete(long categoryID) {
         Category category = this.getCategoryByID(categoryID);
-        if (category.isDeleted()) {
-            for (Book book : bookService.getAllBooksByCategory(category)) {
-                bookService.setCategoryNull(book);
-            }
-            categoryRepository.delete(category);
-            return "Category " + category.getName() + " has been completely deleted.";
-        } else {
-            category.setDeleted(true);
-            categoryRepository.save(category);
-            return "Category " + category.getName() + " has been archived.";
+        for (Book book : bookService.getAllBooksByCategory(category)) {
+            bookService.setCategoryNull(book);
         }
+        categoryRepository.delete(category);
+        return "Category " + category.getName() + " has been completely deleted.";
     }
 
-    public Category unarchive(long categoryID) {
-        Category category = this.getCategoryByID(categoryID);
-        category.setDeleted(false);
-        return categoryRepository.save(category);
-    }
 }

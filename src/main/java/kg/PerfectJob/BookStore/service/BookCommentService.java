@@ -1,13 +1,10 @@
 package kg.PerfectJob.BookStore.service;
 
 import kg.PerfectJob.BookStore.dto.CommentDTO;
-import kg.PerfectJob.BookStore.entity.Book;
 import kg.PerfectJob.BookStore.entity.BookComment;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.repository.BookCommentRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class BookCommentService {

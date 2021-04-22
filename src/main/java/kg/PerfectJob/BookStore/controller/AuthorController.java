@@ -50,11 +50,6 @@ public class AuthorController {
         return new ResponseMessage(authorService.delete(authorID));
     }
 
-    @PutMapping("/unarchive/{id}")
-    public Author unarchiveAuthorByID(@PathVariable("id") Long authorID) {
-        return authorService.unarchive(authorID);
-    }
-
     @PutMapping("/{authorID}/image")
     public Author setImage(@PathVariable Long authorID, @RequestParam("file") MultipartFile file)
             throws IOException {

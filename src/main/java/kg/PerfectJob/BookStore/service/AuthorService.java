@@ -67,23 +67,11 @@ public class AuthorService {
 
     public String delete(long authorID) {
         Author author = this.getAuthorByID(authorID);
-        if (author.isDeleted()) {
-            for (Book book : bookService.getAllBooksByAuthor(author)) {
-                bookService.setAuthorNull(book);
-            }
-            authorRepository.delete(author);
-            return "Author " + author.getName() + " has been completely deleted.";
-        } else {
-            author.setDeleted(true);
-            authorRepository.save(author);
-            return "Author " + author.getName() + " has been archived.";
+        for (Book book : bookService.getAllBooksByAuthor(author)) {
+            bookService.setAuthorNull(book);
         }
-    }
-
-    public Author unarchive(long authorID) {
-        Author author = this.getAuthorByID(authorID);
-        author.setDeleted(false);
-        return authorRepository.save(author);
+        authorRepository.delete(author);
+        return "Author " + author.getName() + " has been completely deleted.";
     }
 
     public void setImage(Media image, User user) {

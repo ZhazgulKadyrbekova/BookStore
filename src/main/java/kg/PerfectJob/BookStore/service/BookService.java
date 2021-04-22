@@ -97,23 +97,11 @@ public class BookService {
 
     public String delete(long bookID) {
         Book book = this.getBookByID(bookID);
-        if (book.isDeleted()) {
-            for (BookComment comment : book.getComments()) {
-                commentService.delete(comment);
-            }
-            bookRepository.delete(book);
-            return "Book with ID " + book.getID() + " has been completely deleted.";
-        } else {
-            book.setDeleted(true);
-            bookRepository.delete(book);
-            return "Book with ID " + book.getID() + " has been archived.";
+        for (BookComment comment : book.getComments()) {
+            commentService.delete(comment);
         }
-    }
-
-    public Book unarchive(long bookID) {
-        Book book = this.getBookByID(bookID);
-        book.setDeleted(!book.isDeleted());
-        return bookRepository.save(book);
+        bookRepository.delete(book);
+        return "Book with ID " + book.getID() + " has been completely deleted.";
     }
 
     public Book setImage(Long bookID, MultipartFile multipartFile) throws IOException {
