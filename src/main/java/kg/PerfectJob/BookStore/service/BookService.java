@@ -4,7 +4,9 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.BookDTO;
 import kg.PerfectJob.BookStore.entity.*;
+import kg.PerfectJob.BookStore.exception.AccessDeniedException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
+import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.repository.BookRepository;
 import kg.PerfectJob.BookStore.repository.MediaRepository;
 import org.springframework.context.annotation.Lazy;
@@ -26,16 +28,18 @@ public class BookService {
     private final BookCommentService commentService;
     private final MediaRepository imageRepository;
     private final MailService mailService;
+    private final UserService userService;
 
     public BookService(BookRepository bookRepository, @Lazy AuthorService authorService,
                        @Lazy CategoryService categoryService, @Lazy BookCommentService commentService,
-                       MediaRepository imageRepository, MailService mailService) {
+                       MediaRepository imageRepository, MailService mailService, UserService userService) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.categoryService = categoryService;
         this.commentService = commentService;
         this.imageRepository = imageRepository;
         this.mailService = mailService;
+        this.userService = userService;
     }
 
     public Book save(Book book) {
@@ -62,7 +66,13 @@ public class BookService {
         return book;
     }
 
-    public Book create(BookDTO bookDTO) {
+    public Book create(BookDTO bookDTO, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         Book book = dtoToBook(new Book(), bookDTO);
         return bookRepository.save(book);
     }
@@ -90,12 +100,24 @@ public class BookService {
         bookRepository.save(book);
     }
 
-    public Book update(long bookID, BookDTO bookDTO) {
+    public Book update(long bookID, BookDTO bookDTO, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         Book book = dtoToBook(this.getBookByID(bookID), bookDTO);
         return bookRepository.save(book);
     }
 
-    public String delete(long bookID) {
+    public String delete(long bookID, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         Book book = this.getBookByID(bookID);
         for (BookComment comment : book.getComments()) {
             commentService.delete(comment);
@@ -165,11 +187,23 @@ public class BookService {
         }
     }
 
-    public List<Book> getBooksByConfirmation(boolean confirmed) {
+    public List<Book> getBooksByConfirmation(boolean confirmed, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         return bookRepository.findAllByConfirmed(confirmed);
     }
 
-    public Book confirmBookByID(long bookID) {
+    public Book confirmBookByID(long bookID, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         Book book = getBookByID(bookID);
         if (book.isConfirmed())
             throw new ResourceNotFoundException("Book with ID " + bookID + " is already confirmed");
@@ -177,7 +211,13 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public String deleteBookByID(long bookID, String description) {
+    public String deleteBookByID(long bookID, String description, String email) {
+        if (email == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        User admin = userService.findUserByEmail(email);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
         Book book = getBookByID(bookID);
         if (book.isConfirmed())
             throw new ResourceNotFoundException("Book with ID " + bookID + " is already confirmed");

@@ -3,11 +3,13 @@ package kg.PerfectJob.BookStore.controller;
 import kg.PerfectJob.BookStore.dto.AuthorDTO;
 import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.entity.Author;
+import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.service.AuthorService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @CrossOrigin
@@ -31,8 +33,10 @@ public class AuthorController {
     }
 
     @PostMapping
-    public Author createNewAuthor(@RequestBody AuthorDTO authorDTO) {
-        return authorService.create(authorDTO);
+    public Author createNewAuthor(@RequestBody AuthorDTO authorDTO, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return authorService.create(authorDTO, principal.getName());
     }
 
     @GetMapping("/{id}")
@@ -41,13 +45,17 @@ public class AuthorController {
     }
 
     @PutMapping("/{id}")
-    public Author updateAuthorInfo(@PathVariable("id") Long authorID, @RequestBody AuthorDTO authorDTO) {
-        return authorService.update(authorID, authorDTO);
+    public Author updateAuthorInfo(@PathVariable("id") Long authorID, @RequestBody AuthorDTO authorDTO, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return authorService.update(authorID, authorDTO, principal.getName());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseMessage deleteAuthorByID(@PathVariable("id") Long authorID) {
-        return new ResponseMessage(authorService.delete(authorID));
+    public ResponseMessage deleteAuthorByID(@PathVariable("id") Long authorID, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return new ResponseMessage(authorService.delete(authorID, principal.getName()));
     }
 
     @PutMapping("/{authorID}/image")
