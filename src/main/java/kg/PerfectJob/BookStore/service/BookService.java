@@ -40,10 +40,6 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    public List<Book> getAllByDeleted(boolean deleted) {
-        return bookRepository.findAllByDeleted(deleted);
-    }
-
     public Book dtoToBook(Book book, BookDTO bookDTO) {
         book.setName(bookDTO.getName());
         if (bookDTO.getAuthorID() != 0) {

@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
-    List<Book> findAllByDeleted(boolean deleted);
     List<Book> findAllByAuthor(Author author);
     List<Book> findAllByCategory(Category category);
     List<Book> findAllByConfirmed(boolean confirmed);
