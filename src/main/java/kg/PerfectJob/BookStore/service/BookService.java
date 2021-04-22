@@ -1,24 +1,18 @@
 package kg.PerfectJob.BookStore.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.BookDTO;
+import kg.PerfectJob.BookStore.dto.CommentDTO;
 import kg.PerfectJob.BookStore.entity.*;
 import kg.PerfectJob.BookStore.exception.AccessDeniedException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.repository.BookRepository;
-import kg.PerfectJob.BookStore.repository.MediaRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @Service
 public class BookService {
@@ -26,24 +20,20 @@ public class BookService {
     private final AuthorService authorService;
     private final CategoryService categoryService;
     private final BookCommentService commentService;
-    private final MediaRepository imageRepository;
     private final MailService mailService;
     private final UserService userService;
+    private final CloudinaryService cloudinaryService;
 
     public BookService(BookRepository bookRepository, @Lazy AuthorService authorService,
                        @Lazy CategoryService categoryService, @Lazy BookCommentService commentService,
-                       MediaRepository imageRepository, MailService mailService, UserService userService) {
+                       MailService mailService, UserService userService, CloudinaryService cloudinaryService) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.categoryService = categoryService;
         this.commentService = commentService;
-        this.imageRepository = imageRepository;
         this.mailService = mailService;
         this.userService = userService;
-    }
-
-    public Book save(Book book) {
-        return bookRepository.save(book);
+        this.cloudinaryService = cloudinaryService;
     }
 
     public List<Book> getAll() {
@@ -127,29 +117,11 @@ public class BookService {
     }
 
     public Book setImage(Long bookID, MultipartFile multipartFile) throws IOException {
+        Book book = this.getBookByID(bookID);
 
-        final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/"; //в конце добавляем '/'
-        Media image = new Media();
-        File file;
-        try{
-            file = Files.createTempFile(System.currentTimeMillis() + "",
-                    Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().length()-4)) // .jpg
-                    .toFile();
-            multipartFile.transferTo(file);
-
-            Cloudinary cloudinary = new Cloudinary(urlKey);
-            Map uploadResult = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
-            image.setName((String) uploadResult.get("public_id"));
-            image.setUrl((String) uploadResult.get("url"));
-            image.setFormat((String) uploadResult.get("format"));
-            imageRepository.save(image);
-
-            Book book = this.getBookByID(bookID);
-            book.setImage(image);
-            return bookRepository.save(book);
-        } catch (IOException e){
-            throw new IOException("Unable to set image to book\n" + e.getMessage());
-        }
+        Media image = cloudinaryService.createMediaFromMultipartFile(multipartFile);
+        book.setImage(image);
+        return bookRepository.save(book);
     }
 
     public String deleteImage(Long bookID) {
@@ -160,31 +132,11 @@ public class BookService {
     }
 
     public Book setData(Long bookID, MultipartFile multipartFile) throws IOException {
+        Book book = this.getBookByID(bookID);
 
-        final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/";
-        Media data = new Media();
-        File file;
-        try{
-            file = Files.createTempFile(System.currentTimeMillis() + "",
-                    Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().length()-4)) // .jpg
-                    .toFile();
-            multipartFile.transferTo(file);
-
-            Cloudinary cloudinary = new Cloudinary(urlKey);
-            Map uploadResult = cloudinary.uploader().upload(file, ObjectUtils
-                    .emptyMap());
-            System.out.println(uploadResult);
-            data.setName((String) uploadResult.get("public_id"));
-            data.setUrl((String) uploadResult.get("url"));
-            data.setFormat((String) uploadResult.get("format"));
-            imageRepository.save(data);
-
-            Book book = this.getBookByID(bookID);
-            book.setData(data);
-            return bookRepository.save(book);
-        } catch (IOException e){
-            throw new IOException("Unable to set data to book\n" + e.getMessage());
-        }
+        Media data = cloudinaryService.createMediaFromMultipartFile(multipartFile);
+        book.setData(data);
+        return bookRepository.save(book);
     }
 
     public List<Book> getBooksByConfirmation(boolean confirmed, String email) {
@@ -197,13 +149,16 @@ public class BookService {
         return bookRepository.findAllByConfirmed(confirmed);
     }
 
-    public Book confirmBookByID(long bookID, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
+    private void checkRoleForAdminOrModerator(String email) {
         User admin = userService.findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
             throw new AccessDeniedException("Access Denied!");
         }
+
+    }
+
+    public Book confirmBookByID(long bookID, String email) {
+        checkRoleForAdminOrModerator(email);
         Book book = getBookByID(bookID);
         if (book.isConfirmed())
             throw new ResourceNotFoundException("Book with ID " + bookID + " is already confirmed");
@@ -212,12 +167,7 @@ public class BookService {
     }
 
     public String deleteBookByID(long bookID, String description, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
-        User admin = userService.findUserByEmail(email);
-        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
-            throw new AccessDeniedException("Access Denied!");
-        }
+        checkRoleForAdminOrModerator(email);
         Book book = getBookByID(bookID);
         if (book.isConfirmed())
             throw new ResourceNotFoundException("Book with ID " + bookID + " is already confirmed");
@@ -232,5 +182,38 @@ public class BookService {
         else
             return "Book with ID " + bookID + " has been deleted. " +
                     "Errors with sending mail with description to user " + userEmail;
+    }
+
+    public Book createComment(long bookID, CommentDTO commentDTO, String email) {
+        Book book = getBookByID(bookID);
+        List<BookComment> comments = book.getComments();
+        comments.add(commentService.create(commentDTO, email));
+        book.setComments(comments);
+        return bookRepository.save(book);
+    }
+
+    public Book updateComment(long bookID, CommentDTO commentDTO, long commentID, String email) {
+        Book book = getBookByID(bookID);
+        List<BookComment> comments = book.getComments();
+        BookComment comment = commentService.getByID(commentID);
+        if (!comments.contains(comment))
+            throw new ResourceNotFoundException("Comment with ID " + commentID + " has not found in list of this book.");
+        comments.remove(comment);
+        comments.add(commentService.update(comment, commentDTO, email));
+        book.setComments(comments);
+        return bookRepository.save(book);
+    }
+
+    public Book deleteComment(long bookID, long commentID, String email) {
+        Book book = getBookByID(bookID);
+        List<BookComment> comments = book.getComments();
+        BookComment comment = commentService.getByID(commentID);
+        if (!comment.getUser().getEmail().equals(email))
+            throw new AccessDeniedException("Access Denied.");
+        if (!comments.contains(comment))
+            throw new ResourceNotFoundException("Comment with ID " + commentID + " has not found in list of this book.");
+        comments.remove(comment);
+        commentService.delete(comment);
+        return book;
     }
 }

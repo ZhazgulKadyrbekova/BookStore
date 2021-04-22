@@ -4,10 +4,7 @@ import kg.PerfectJob.BookStore.dto.BookDTO;
 import kg.PerfectJob.BookStore.dto.CommentDTO;
 import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.entity.Book;
-import kg.PerfectJob.BookStore.entity.BookComment;
-import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.exception.UnauthorizedException;
-import kg.PerfectJob.BookStore.service.BookCommentService;
 import kg.PerfectJob.BookStore.service.BookService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,11 +18,9 @@ import java.util.List;
 @RequestMapping("/book")
 public class BookController {
     private final BookService bookService;
-    private final BookCommentService bookCommentService;
 
-    public BookController(BookService bookService, BookCommentService bookCommentService) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
-        this.bookCommentService = bookCommentService;
     }
 
     @GetMapping
@@ -60,11 +55,7 @@ public class BookController {
     public Book createComment(@PathVariable Long bookID, @RequestBody CommentDTO commentDTO, Principal principal) {
         if (principal == null)
             throw new UnauthorizedException("Please, authorize to see the response");
-        Book book = bookService.getBookByID(bookID);
-        List<BookComment> comments = book.getComments();
-        comments.add(bookCommentService.create(commentDTO, principal.getName()));
-        book.setComments(comments);
-        return bookService.save(book);
+        return bookService.createComment(bookID, commentDTO, principal.getName());
     }
 
     @PutMapping("/{bookID}/comment/{commentID}")
@@ -72,27 +63,14 @@ public class BookController {
                               @PathVariable Long commentID, Principal principal) {
         if (principal == null)
             throw new UnauthorizedException("Please, authorize to see the response");
-        Book book = bookService.getBookByID(bookID);
-        List<BookComment> comments = book.getComments();
-        BookComment comment = bookCommentService.getByID(commentID);
-        if (!comments.contains(comment))
-            throw new ResourceNotFoundException("Comment with ID " + commentID + " has not found in list of this book.");
-        comments.remove(comment);
-        comments.add(bookCommentService.update(comment, commentDTO, principal.getName()));
-        book.setComments(comments);
-        return book;
+        return bookService.updateComment(bookID, commentDTO, commentID, principal.getName());
     }
 
     @DeleteMapping("/{bookID}/comment/{commentID}")
-    public Book deleteComment(@PathVariable Long bookID, @PathVariable Long commentID) {
-        Book book = bookService.getBookByID(bookID);
-        List<BookComment> comments = book.getComments();
-        BookComment comment = bookCommentService.getByID(commentID);
-        if (!comments.contains(comment))
-            throw new ResourceNotFoundException("Comment with ID " + commentID + " has not found in list of this book.");
-        comments.remove(comment);
-        bookCommentService.delete(comment);
-        return book;
+    public Book deleteComment(@PathVariable Long bookID, @PathVariable Long commentID, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return bookService.deleteComment(bookID, commentID, principal.getName());
     }
 
     @PutMapping("/{id}")

@@ -1,7 +1,5 @@
 package kg.PerfectJob.BookStore.service;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
 import kg.PerfectJob.BookStore.dto.*;
 import kg.PerfectJob.BookStore.entity.Media;
 import kg.PerfectJob.BookStore.entity.Role;
@@ -10,7 +8,6 @@ import kg.PerfectJob.BookStore.exception.AccessDeniedException;
 import kg.PerfectJob.BookStore.exception.InvalidInputException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
 import kg.PerfectJob.BookStore.exception.UnauthorizedException;
-import kg.PerfectJob.BookStore.repository.MediaRepository;
 import kg.PerfectJob.BookStore.repository.RoleRepository;
 import kg.PerfectJob.BookStore.repository.UserRepository;
 import org.springframework.context.annotation.Lazy;
@@ -18,12 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -32,17 +25,17 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final MailService mailService;
     private final PasswordEncoder encoder;
-    private final MediaRepository imageRepository;
     private final AuthorService authorService;
+    private final CloudinaryService cloudinaryService;
 
     public UserService(UserRepository userRepository, RoleRepository roleRepository, MailService mailService, PasswordEncoder encoder,
-                       MediaRepository imageRepository, @Lazy AuthorService authorService) {
+                       @Lazy AuthorService authorService, CloudinaryService cloudinaryService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.mailService = mailService;
         this.encoder = encoder;
-        this.imageRepository = imageRepository;
         this.authorService = authorService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public User findUserByID(long id) {
@@ -171,31 +164,13 @@ public class UserService {
     }
 
     public User setImage(MultipartFile multipartFile, String userEmail) throws IOException {
+        User user = userRepository.findByEmailIgnoreCase(userEmail);
 
-        final String urlKey = "cloudinary://122578963631996:RKDo37y7ru4nnuLsBGQbwBUk65o@zhazgul/"; //в конце добавляем '/'
-        Media image = new Media();
-        File file;
-        try{
-            file = Files.createTempFile(System.currentTimeMillis() + "",
-                    Objects.requireNonNull(multipartFile.getOriginalFilename()).substring(multipartFile.getOriginalFilename().length()-4)) // .jpg
-                    .toFile();
-            multipartFile.transferTo(file);
-
-            Cloudinary cloudinary = new Cloudinary(urlKey);
-            Map uploadResult = cloudinary.uploader().upload(file, ObjectUtils.emptyMap());
-            image.setName((String) uploadResult.get("public_id"));
-            image.setUrl((String) uploadResult.get("url"));
-            image.setFormat((String) uploadResult.get("format"));
-            imageRepository.save(image);
-
-            User user = userRepository.findByEmailIgnoreCase(userEmail);
-            user.setImage(image);
-            userRepository.save(user);
-            authorService.setImage(image, user);
-            return user;
-        } catch (IOException e){
-            throw new IOException("Unable to set image to user\n" + e.getMessage());
-        }
+        Media image = cloudinaryService.createMediaFromMultipartFile(multipartFile);
+        user.setImage(image);
+        userRepository.save(user);
+        authorService.setImage(image, user);
+        return user;
     }
 
     public String deleteImage(String email) {
