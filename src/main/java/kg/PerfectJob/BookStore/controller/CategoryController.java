@@ -48,8 +48,4 @@ public class CategoryController {
         return new ResponseMessage(categoryService.delete(categoryID));
     }
 
-    @PutMapping("/unarchive/{id}")
-    public Category unarchiveCategoryByID(@PathVariable("id") Long categoryID) {
-        return categoryService.unarchive(categoryID);
-    }
 }

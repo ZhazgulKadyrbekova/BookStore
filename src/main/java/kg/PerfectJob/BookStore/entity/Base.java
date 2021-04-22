@@ -20,9 +20,6 @@ public class Base {
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
 
-    @Column(name = "deleted", precision = 0, nullable = false)
-    private boolean deleted;
-
     @PrePersist
     public void onPrePersist() {
         this.dateCreated = LocalDateTime.now();
