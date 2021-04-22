@@ -23,14 +23,12 @@ import java.util.Objects;
 @Service
 public class AuthorService {
     private final AuthorRepository authorRepository;
-    private final UserService userService;
     private final BookService bookService;
     private final MediaRepository imageRepository;
 
-    public AuthorService(AuthorRepository authorRepository, UserService userService, BookService bookService,
+    public AuthorService(AuthorRepository authorRepository, BookService bookService,
                          MediaRepository imageRepository) {
         this.authorRepository = authorRepository;
-        this.userService = userService;
         this.bookService = bookService;
         this.imageRepository = imageRepository;
     }
@@ -48,12 +46,6 @@ public class AuthorService {
         author.setType(authorDTO.getType());
         author.setBirthDate(authorDTO.getBirthDate());
         author.setBiography(authorDTO.getBiography());
-        if (authorDTO.getUserID() != 0) {
-            User user = userService.findUserByID(authorDTO.getUserID());
-            if (user == null)
-                throw new ResourceNotFoundException("User with ID " + authorDTO.getUserID() + " has not found");
-            author.setUser(user);
-        }
 
         return author;
     }

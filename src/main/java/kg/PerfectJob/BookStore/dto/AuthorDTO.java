@@ -15,5 +15,4 @@ public class AuthorDTO {
     private String type;
     private LocalDate birthDate;
     private String biography;
-    private long userID;
 }
