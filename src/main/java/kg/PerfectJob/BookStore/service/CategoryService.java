@@ -28,10 +28,6 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
-    public List<Category> getAllByDeleted(boolean deleted) {
-        return categoryRepository.findAllByDeleted(deleted);
-    }
-
     public Category create(CategoryDTO categoryDTO, String email) {
         if (email == null)
             throw new UnauthorizedException("Please, authorize to see the response");

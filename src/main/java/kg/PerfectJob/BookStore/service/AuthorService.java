@@ -35,10 +35,6 @@ public class AuthorService {
         return authorRepository.findAll();
     }
 
-    public List<Author> getAllByDeleted(boolean deleted) {
-        return authorRepository.findAllByDeleted(deleted);
-    }
-
     private Author dtoToAuthor(Author author, AuthorDTO authorDTO) {
         author.setName(authorDTO.getName());
         author.setType(authorDTO.getType());

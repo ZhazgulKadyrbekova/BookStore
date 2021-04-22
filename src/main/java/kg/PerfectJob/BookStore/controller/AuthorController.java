@@ -27,11 +27,6 @@ public class AuthorController {
         return authorService.getAll();
     }
 
-    @GetMapping("/deleted/{deleted}")
-    public List<Author> getAllAuthorsByDeleted(@PathVariable boolean deleted) {
-        return authorService.getAllByDeleted(deleted);
-    }
-
     @PostMapping
     public Author createNewAuthor(@RequestBody AuthorDTO authorDTO, Principal principal) {
         if (principal == null)

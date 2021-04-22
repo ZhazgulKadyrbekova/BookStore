@@ -28,11 +28,6 @@ public class BookController {
         return bookService.getAll();
     }
 
-    @GetMapping("/deleted/{deleted}")
-    public List<Book> getAllBooksByDeleted(@PathVariable boolean deleted) {
-        return bookService.getAllByDeleted(deleted);
-    }
-
     @PostMapping
     public Book createNewBook(@RequestBody BookDTO bookDTO, Principal principal) {
         if (principal == null)

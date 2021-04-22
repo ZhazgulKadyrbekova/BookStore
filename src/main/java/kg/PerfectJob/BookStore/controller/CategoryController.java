@@ -25,11 +25,6 @@ public class CategoryController {
         return categoryService.getAll();
     }
 
-    @GetMapping("/deleted/{deleted}")
-    public List<Category> getAllCategoriesByDeleted(@PathVariable boolean deleted) {
-        return categoryService.getAllByDeleted(deleted);
-    }
-
     @PostMapping
     public Category createNewCategory(@RequestBody CategoryDTO categoryDTO, Principal principal) {
         if (principal == null)
