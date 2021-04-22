@@ -6,6 +6,7 @@ import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.entity.Book;
 import kg.PerfectJob.BookStore.entity.BookComment;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
+import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.service.BookCommentService;
 import kg.PerfectJob.BookStore.service.BookService;
 import org.springframework.web.bind.annotation.*;
@@ -38,8 +39,10 @@ public class BookController {
     }
 
     @PostMapping
-    public Book createNewBook(@RequestBody BookDTO bookDTO) {
-        return bookService.create(bookDTO);
+    public Book createNewBook(@RequestBody BookDTO bookDTO, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return bookService.create(bookDTO, principal.getName());
     }
 
     @GetMapping("/{id}")
@@ -55,6 +58,8 @@ public class BookController {
 
     @PostMapping("/{bookID}/comment")
     public Book createComment(@PathVariable Long bookID, @RequestBody CommentDTO commentDTO, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
         Book book = bookService.getBookByID(bookID);
         List<BookComment> comments = book.getComments();
         comments.add(bookCommentService.create(commentDTO, principal.getName()));
@@ -63,7 +68,10 @@ public class BookController {
     }
 
     @PutMapping("/{bookID}/comment/{commentID}")
-    public Book updateComment(@PathVariable Long bookID, @RequestBody CommentDTO commentDTO, @PathVariable Long commentID, Principal principal) {
+    public Book updateComment(@PathVariable Long bookID, @RequestBody CommentDTO commentDTO,
+                              @PathVariable Long commentID, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
         Book book = bookService.getBookByID(bookID);
         List<BookComment> comments = book.getComments();
         BookComment comment = bookCommentService.getByID(commentID);
@@ -88,13 +96,17 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public Book updateBookInfo(@PathVariable("id") Long bookID, @RequestBody BookDTO bookDTO) {
-        return bookService.update(bookID, bookDTO);
+    public Book updateBookInfo(@PathVariable("id") Long bookID, @RequestBody BookDTO bookDTO, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return bookService.update(bookID, bookDTO, principal.getName());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseMessage deleteBookByID(@PathVariable("id") Long bookID) {
-        return new ResponseMessage(bookService.delete(bookID));
+    public ResponseMessage deleteBookByID(@PathVariable("id") Long bookID, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return new ResponseMessage(bookService.delete(bookID, principal.getName()));
     }
 
     @PutMapping("/{bookID}/image")
@@ -109,18 +121,24 @@ public class BookController {
     }
 
     @GetMapping("/confirmed/{confirmed}")
-    public List<Book> getBooksByConfirmation(@PathVariable Boolean confirmed) {
-        return bookService.getBooksByConfirmation(confirmed);
+    public List<Book> getBooksByConfirmation(@PathVariable Boolean confirmed, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return bookService.getBooksByConfirmation(confirmed, principal.getName());
     }
 
     @PutMapping("/confirm/{bookID}")
-    public Book confirmBookByID(@PathVariable Long bookID) {
-        return bookService.confirmBookByID(bookID);
+    public Book confirmBookByID(@PathVariable Long bookID, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return bookService.confirmBookByID(bookID, principal.getName());
     }
 
     @DeleteMapping("/confirm/{bookID}")
-    public ResponseMessage deleteBookByID(@PathVariable Long bookID, @RequestParam String description) {
-        return new ResponseMessage(bookService.deleteBookByID(bookID, description));
+    public ResponseMessage deleteBookByID(@PathVariable Long bookID, @RequestParam String description, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        return new ResponseMessage(bookService.deleteBookByID(bookID, description, principal.getName()));
     }
 
 }
