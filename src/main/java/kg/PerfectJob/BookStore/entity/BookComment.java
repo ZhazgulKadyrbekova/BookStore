@@ -2,10 +2,12 @@ package kg.PerfectJob.BookStore.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +19,7 @@ public class BookComment extends Base {
     @Column(name = "rating")
     private float rating;
 
-    @Column(name = "dascription")
+    @Column(name = "description")
     private String description;
 
     @ManyToOne

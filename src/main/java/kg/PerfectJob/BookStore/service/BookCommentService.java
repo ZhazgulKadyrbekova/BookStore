@@ -10,12 +10,10 @@ import org.springframework.stereotype.Service;
 public class BookCommentService {
     private final BookCommentRepository bookCommentRepository;
     private final UserService userService;
-    private final BookService bookService;
 
-    public BookCommentService(BookCommentRepository bookCommentRepository, UserService userService, BookService bookService) {
+    public BookCommentService(BookCommentRepository bookCommentRepository, UserService userService) {
         this.bookCommentRepository = bookCommentRepository;
         this.userService = userService;
-        this.bookService = bookService;
     }
 
     public BookComment getByID(long commentID) {
