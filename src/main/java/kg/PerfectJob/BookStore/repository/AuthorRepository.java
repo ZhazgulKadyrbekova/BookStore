@@ -11,4 +11,5 @@ import java.util.List;
 public interface AuthorRepository extends JpaRepository<Author, Long> {
     Author findAuthorByUser(User user);
     List<Author> findAllByNameContainingIgnoringCase(String name);
+    List<Author> findAllByTypeIgnoringCase(String type);
 }

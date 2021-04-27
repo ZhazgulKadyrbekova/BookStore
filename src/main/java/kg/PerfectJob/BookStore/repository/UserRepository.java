@@ -4,9 +4,12 @@ import kg.PerfectJob.BookStore.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Set;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findByNameContainingIgnoreCase(String name);
+    Set<User> findAllByNameContainingIgnoringCase(String name);
+    Set<User> findAllByEmailContainingIgnoringCase(String email);
     User findByEmailIgnoreCase(String email);
     User findByActivationCode(String code);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 
 @CrossOrigin
 @RestController
@@ -31,6 +32,11 @@ public class UserController {
     @GetMapping("/email/{email}")
     public User getByEmail(@PathVariable String email) {
         return userService.findUserByEmail(email);
+    }
+
+    @GetMapping("/search")
+    public Set<User> search(@RequestParam("name") String name) {
+        return userService.search(name);
     }
 
     @PutMapping("/password")
