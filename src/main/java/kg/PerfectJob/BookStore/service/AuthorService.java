@@ -37,14 +37,21 @@ public class AuthorService {
 
     private Author dtoToAuthor(Author author, AuthorDTO authorDTO) {
         author.setName(authorDTO.getName());
-        author.setType(authorDTO.getType());
         author.setBirthDate(authorDTO.getBirthDate());
         author.setBiography(authorDTO.getBiography());
 
         return author;
     }
 
-    public Author create(AuthorDTO authorDTO, String email) {
+    public void createNewAuthor(User user) {
+        Author author = new Author();
+        author.setName(user.getName());
+        //TODO create & use enum
+        author.setType("NEW");
+        authorRepository.save(author);
+    }
+
+    public Author createOldAuthor(AuthorDTO authorDTO, String email) {
         if (email == null)
             throw new UnauthorizedException("Please, authorize to see the response");
         User admin = userService.findUserByEmail(email);
@@ -53,12 +60,9 @@ public class AuthorService {
         }
 
         Author author = dtoToAuthor(new Author(), authorDTO);
+        //TODO create & use enum
+        author.setType("OLD");
         return authorRepository.save(author);
-    }
-
-    public void create(AuthorDTO authorDTO) {
-        Author author = dtoToAuthor(new Author(), authorDTO);
-        authorRepository.save(author);
     }
 
     public Author getAuthorByID(long authorID) {
@@ -69,11 +73,12 @@ public class AuthorService {
     public Author update(long authorID, AuthorDTO authorDTO, String email) {
         if (email == null)
             throw new UnauthorizedException("Please, authorize to see the response");
+        Author author = this.getAuthorByID(authorID);
         User admin = userService.findUserByEmail(email);
-        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !author.getType().equals("NEW")) {
             throw new AccessDeniedException("Access Denied!");
         }
-        Author author = dtoToAuthor(this.getAuthorByID(authorID), authorDTO);
+        author = dtoToAuthor(author, authorDTO);
         return authorRepository.save(author);
     }
 
