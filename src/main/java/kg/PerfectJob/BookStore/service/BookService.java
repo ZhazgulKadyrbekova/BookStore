@@ -183,9 +183,14 @@ public class BookService {
     public Book createComment(long bookID, CommentDTO commentDTO, String email) {
         Book book = getBookByID(bookID);
         List<BookComment> comments = book.getComments();
-        comments.add(commentService.create(commentDTO, email));
+        BookComment comment = commentService.create(commentDTO, email);
+        comments.add(comment);
         book.setComments(comments);
-        return bookRepository.save(book);
+        double aveBookRating = (book.getAverageRating() + comment.getRating()) / 2;
+        book.setAverageRating(aveBookRating);
+        book = bookRepository.save(book);
+        authorService.updateRating(book);
+        return book;
     }
 
     public Book updateComment(long bookID, CommentDTO commentDTO, long commentID, String email) {
@@ -195,9 +200,14 @@ public class BookService {
         if (!comments.contains(comment))
             throw new ResourceNotFoundException("Comment with ID " + commentID + " has not found in list of this book.");
         comments.remove(comment);
+        double oldCommentRating = comment.getRating(), newCommentRating = commentDTO.getRating();
         comments.add(commentService.update(comment, commentDTO, email));
         book.setComments(comments);
-        return bookRepository.save(book);
+        double aveRating = book.getAverageRating() - (oldCommentRating/2 - newCommentRating/2);
+        book.setAverageRating(aveRating);
+        book = bookRepository.save(book);
+        authorService.updateRating(book);
+        return book;
     }
 
     public Book deleteComment(long bookID, long commentID, String email) {
@@ -210,6 +220,11 @@ public class BookService {
             throw new ResourceNotFoundException("Comment with ID " + commentID + " has not found in list of this book.");
         comments.remove(comment);
         commentService.delete(comment);
+        double aveRating = book.getAverageRating() - comment.getRating()/2;
+        book.setAverageRating(aveRating);
+        book = bookRepository.save(book);
+        authorService.updateRating(book);
         return book;
     }
+
 }

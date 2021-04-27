@@ -17,7 +17,7 @@ import javax.persistence.*;
 public class BookComment extends Base {
     
     @Column(name = "rating")
-    private float rating;
+    private double rating;
 
     @Column(name = "description")
     private String description;

@@ -21,7 +21,7 @@ public class Book extends Base {
     private String name;
 
     @Column(name = "average_rating")
-    private float averageRating;
+    private double averageRating;
 
     @Column(name = "type")
     private String type;
