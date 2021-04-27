@@ -135,14 +135,14 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public List<Book> getBooksByConfirmation(boolean confirmed, String email) {
+    public List<Book> getBooksByConfirmation(String email) {
         if (email == null)
             throw new UnauthorizedException("Please, authorize to see the response");
         User admin = userService.findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
             throw new AccessDeniedException("Access Denied!");
         }
-        return bookRepository.findAllByConfirmed(confirmed);
+        return bookRepository.findAllByConfirmed(false);
     }
 
     private void checkRoleForAdminOrModerator(String email) {
