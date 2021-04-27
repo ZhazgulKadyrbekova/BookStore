@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 public class CommentDTO {
-    private float rating;
+    private double rating;
     private String description;
 }

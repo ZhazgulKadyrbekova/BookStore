@@ -120,4 +120,13 @@ public class AuthorService {
         authorRepository.save(author);
         return "Image successfully deleted";
     }
+
+    public void updateRating(Book book) {
+        long authorID = book.getID();
+        Author author = getAuthorByID(authorID);
+
+        double aveRating = (author.getAverageRating() + book.getAverageRating()) / 2;
+        author.setAverageRating(aveRating);
+        authorRepository.save(author);
+    }
 }
