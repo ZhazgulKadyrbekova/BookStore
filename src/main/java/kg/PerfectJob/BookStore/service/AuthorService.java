@@ -7,7 +7,6 @@ import kg.PerfectJob.BookStore.entity.Media;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.exception.AccessDeniedException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
-import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.repository.AuthorRepository;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -31,8 +30,8 @@ public class AuthorService {
         this.cloudinaryService = cloudinaryService;
     }
 
-    public List<Author> getAll() {
-        return authorRepository.findAll();
+    public List<Author> getAll(String type) {
+        return authorRepository.findAllByTypeIgnoringCase(type);
     }
 
     private Author dtoToAuthor(Author author, AuthorDTO authorDTO) {
@@ -52,8 +51,6 @@ public class AuthorService {
     }
 
     public Author createOldAuthor(AuthorDTO authorDTO, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User admin = userService.findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
             throw new AccessDeniedException("Access Denied!");
@@ -71,30 +68,28 @@ public class AuthorService {
     }
 
     public Author update(long authorID, AuthorDTO authorDTO, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         Author author = this.getAuthorByID(authorID);
         User admin = userService.findUserByEmail(email);
-        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !author.getType().equals("NEW")) {
+        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
+            return authorRepository.save(dtoToAuthor(author, authorDTO));
+        } else {
             throw new AccessDeniedException("Access Denied!");
         }
-        author = dtoToAuthor(author, authorDTO);
-        return authorRepository.save(author);
+
     }
 
     public String delete(long authorID, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
+        Author author = this.getAuthorByID(authorID);
         User admin = userService.findUserByEmail(email);
-        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
+            for (Book book : bookService.getAllBooksByAuthor(author)) {
+                bookService.setAuthorNull(book);
+            }
+            authorRepository.delete(author);
+            return "Author " + author.getName() + " has been completely deleted.";
+        } else {
             throw new AccessDeniedException("Access Denied!");
         }
-        Author author = this.getAuthorByID(authorID);
-        for (Book book : bookService.getAllBooksByAuthor(author)) {
-            bookService.setAuthorNull(book);
-        }
-        authorRepository.delete(author);
-        return "Author " + author.getName() + " has been completely deleted.";
     }
 
     public void setImage(Media image, User user) {
@@ -105,12 +100,16 @@ public class AuthorService {
         }
     }
 
-    public Author setImage(Long authorID, MultipartFile multipartFile) throws IOException {
+    public Author setImage(Long authorID, MultipartFile multipartFile, String email) throws IOException {
         Author author = this.getAuthorByID(authorID);
-
-        Media image = cloudinaryService.createMediaFromMultipartFile(multipartFile);
-        author.setImage(image);
-        return authorRepository.save(author);
+        User admin = userService.findUserByEmail(email);
+        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
+            Media image = cloudinaryService.createMediaFromMultipartFile(multipartFile);
+            author.setImage(image);
+            return authorRepository.save(author);
+        } else {
+            throw new AccessDeniedException("Access Denied!");
+        }
     }
 
     public void deleteImage(User user) {
@@ -119,11 +118,16 @@ public class AuthorService {
         authorRepository.save(author);
     }
 
-    public String deleteImage(Long authorID) {
+    public String deleteImage(Long authorID, String email) {
         Author author = this.getAuthorByID(authorID);
-        author.setImage(null);
-        authorRepository.save(author);
-        return "Image successfully deleted";
+        User admin = userService.findUserByEmail(email);
+        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
+            author.setImage(null);
+            authorRepository.save(author);
+            return "Image successfully deleted";
+        } else {
+            throw new AccessDeniedException("Access Denied!");
+        }
     }
 
     public void updateRating(Book book) {

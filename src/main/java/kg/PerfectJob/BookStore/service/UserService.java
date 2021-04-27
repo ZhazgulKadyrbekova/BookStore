@@ -7,7 +7,6 @@ import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.exception.AccessDeniedException;
 import kg.PerfectJob.BookStore.exception.InvalidInputException;
 import kg.PerfectJob.BookStore.exception.ResourceNotFoundException;
-import kg.PerfectJob.BookStore.exception.UnauthorizedException;
 import kg.PerfectJob.BookStore.repository.RoleRepository;
 import kg.PerfectJob.BookStore.repository.UserRepository;
 import org.springframework.context.annotation.Lazy;
@@ -17,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -38,13 +38,10 @@ public class UserService {
         this.cloudinaryService = cloudinaryService;
     }
 
-    public User findUserByID(long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " has not found"));
-    }
-
-    public User findUserByName(String name) {
-        return userRepository.findByNameContainingIgnoreCase(name);
+    public Set<User> search(String name) {
+        Set<User> users = userRepository.findAllByNameContainingIgnoringCase(name);
+        users.addAll(userRepository.findAllByEmailContainingIgnoringCase(name));
+        return users;
     }
 
     public User findUserByEmail(String email) {
@@ -60,7 +57,8 @@ public class UserService {
         user.setEmail(userDTO.getEmail());
         user.setPassword(encoder.encode(userDTO.getPassword()));
         user.setName(userDTO.getName() + " " + userDTO.getSurname());
-        user.setOccupation(userDTO.getOccupation());
+        //TODO use enum in occupations
+        user.setOccupation(userDTO.getOccupation().toUpperCase());
 	    user.setActivationCode(UUID.randomUUID().toString());
 	    Role role = roleRepository.findByNameContainingIgnoreCase(user.getOccupation());
 	    if (role == null) {
@@ -76,8 +74,6 @@ public class UserService {
     }
 
     public String createAdmin(UserAdminDTO userAdminDTO, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User admin = findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
             throw new AccessDeniedException("Access Denied!");
@@ -98,8 +94,6 @@ public class UserService {
     }
 
     public User saveAdmin(UserSaveAdminDTO userSaveAdminDTO, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User admin = findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
             throw new AccessDeniedException("Access Denied!");
@@ -118,7 +112,7 @@ public class UserService {
             return "Be sure to enter valid activation code";
         user.setActivationCode(null);
         user.setActive(true);
-        if (user.getOccupation().equals("writer")) {
+        if (user.getOccupation().equals("WRITER")) {
             authorService.createNewAuthor(user);
         }
         userRepository.save(user);
@@ -144,8 +138,6 @@ public class UserService {
     }
 
     public User changePassword(UserPasswordDTO userPasswordDTO, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         if (!email.equals(userPasswordDTO.getEmail())) {
             throw new AccessDeniedException("Access Denied!");
         }
@@ -171,8 +163,6 @@ public class UserService {
     }
 
     public String deleteImage(String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User user = userRepository.findByEmailIgnoreCase(email);
         user.setImage(null);
         userRepository.save(user);
@@ -182,8 +172,6 @@ public class UserService {
     }
 
     public User updateUserByEmail(String email, UserEditDTO userEditDTO) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User user = this.findUserByEmail(email);
         user.setName(userEditDTO.getName() + " " + userEditDTO.getSurname());
         return userRepository.save(user);

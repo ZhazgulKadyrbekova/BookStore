@@ -29,8 +29,6 @@ public class CategoryService {
     }
 
     public Category create(CategoryDTO categoryDTO, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User admin = userService.findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
             throw new AccessDeniedException("Access Denied!");
@@ -46,8 +44,6 @@ public class CategoryService {
     }
 
     public Category update(long categoryID, CategoryDTO categoryDTO, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User admin = userService.findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
             throw new AccessDeniedException("Access Denied!");
@@ -58,8 +54,6 @@ public class CategoryService {
     }
 
     public String delete(long categoryID, String email) {
-        if (email == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
         User admin = userService.findUserByEmail(email);
         if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
             throw new AccessDeniedException("Access Denied!");
