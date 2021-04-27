@@ -22,7 +22,7 @@ public class Init implements CommandLineRunner {
     @Override
     public void run(String... args) {
 //        Role role = roleRepository.save(new Role("ROLE_ADMIN"));
-//        userService.create(new User("admin@gmail.com", "***REMOVED***", "Admin", null,
+//        userService.create(new User("admin@gmail.com", "12345678", "Admin", null,
 //                true, null, role, null));
     }
 }
