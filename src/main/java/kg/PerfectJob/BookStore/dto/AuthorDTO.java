@@ -12,7 +12,6 @@ import java.time.LocalDate;
 
 public class AuthorDTO {
     private String name;
-    private String type;
     private LocalDate birthDate;
     private String biography;
 }

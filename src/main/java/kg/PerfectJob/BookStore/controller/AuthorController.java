@@ -31,7 +31,7 @@ public class AuthorController {
     public Author createNewAuthor(@RequestBody AuthorDTO authorDTO, Principal principal) {
         if (principal == null)
             throw new UnauthorizedException("Please, authorize to see the response");
-        return authorService.create(authorDTO, principal.getName());
+        return authorService.createOldAuthor(authorDTO, principal.getName());
     }
 
     @GetMapping("/{id}")

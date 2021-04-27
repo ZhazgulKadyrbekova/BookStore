@@ -18,8 +18,8 @@ public class SearchService {
     }
 
     public List<Object> getAllByName(String name) {
-        List<Object> result = new java.util.ArrayList<>(Collections.singletonList(authorRepository.findAllByNameContaining(name)));
-        result.addAll(bookRepository.findAllByNameContaining(name));
+        List<Object> result = new java.util.ArrayList<>(Collections.singletonList(authorRepository.findAllByNameContainingIgnoringCase(name)));
+        result.addAll(bookRepository.findAllByNameContainingIgnoringCase(name));
 
         return result;
     }
