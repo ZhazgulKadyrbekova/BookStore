@@ -39,7 +39,7 @@ public class AuthorService {
     }
 
     private Author dtoToAuthor(Author author, AuthorDTO authorDTO) {
-        String name = authorDTO.getName() + authorDTO.getSurname();
+        String name = authorDTO.getName() + " " + authorDTO.getSurname();
         author.setName(name);
         author.setBirthDate(authorDTO.getBirthDate());
         author.setBiography(authorDTO.getBiography());
@@ -58,7 +58,7 @@ public class AuthorService {
 
     public Author createOldAuthor(AuthorDTO authorDTO, String email) {
         User admin = userService.findUserByEmail(email);
-        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+        if (!admin.getRole().getName().equalsIgnoreCase("ROLE_ADMIN")) {
             throw new AccessDeniedException("Access Denied!");
         }
 
@@ -76,8 +76,8 @@ public class AuthorService {
     public Author update(long authorID, AuthorDTO authorDTO, String email) {
         Author author = dtoToAuthor(this.getAuthorByID(authorID), authorDTO);
         User admin = userService.findUserByEmail(email);
-        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
-            if (author.getType().equals("NEW")) {
+        if (admin.getRole().getName().equalsIgnoreCase("ROLE_ADMIN") || (author.getType().equalsIgnoreCase("NEW") && author.getUser().getEmail().equalsIgnoreCase(email))) {
+            if (author.getType().equalsIgnoreCase("NEW")) {
                 admin.setName(author.getName());
                 userService.saveUpdatedUser(admin);
             }
@@ -91,7 +91,7 @@ public class AuthorService {
     public String delete(long authorID, String email) {
         Author author = this.getAuthorByID(authorID);
         User admin = userService.findUserByEmail(email);
-        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
+        if (admin.getRole().getName().equalsIgnoreCase("ROLE_ADMIN") || (author.getType().equalsIgnoreCase("NEW") && author.getUser().getEmail().equalsIgnoreCase(email))) {
             for (Book book : bookService.getAllBooksByAuthor(author)) {
                 bookService.setAuthorNull(book);
             }
@@ -113,7 +113,7 @@ public class AuthorService {
     public Author setImage(Long authorID, MultipartFile multipartFile, String email) throws IOException {
         Author author = this.getAuthorByID(authorID);
         User admin = userService.findUserByEmail(email);
-        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
+        if (admin.getRole().getName().equalsIgnoreCase("ROLE_ADMIN") || (author.getType().equalsIgnoreCase("NEW") && author.getUser().getEmail().equalsIgnoreCase(email))) {
             Media image = cloudinaryService.createMediaFromMultipartFile(multipartFile);
             author.setImage(image);
             return authorRepository.save(author);
@@ -131,7 +131,7 @@ public class AuthorService {
     public String deleteImage(Long authorID, String email) {
         Author author = this.getAuthorByID(authorID);
         User admin = userService.findUserByEmail(email);
-        if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
+        if (admin.getRole().getName().equalsIgnoreCase("ROLE_ADMIN") || (author.getType().equalsIgnoreCase("NEW") && author.getUser().getEmail().equalsIgnoreCase(email))) {
             author.setImage(null);
             authorRepository.save(author);
             return "Image successfully deleted";
