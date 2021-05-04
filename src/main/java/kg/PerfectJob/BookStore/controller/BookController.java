@@ -59,4 +59,8 @@ public class BookController {
         return new ResponseMessage(bookService.delete(bookID, email));
     }
 
+    @GetMapping("/author/{id}")
+    public List<Book> getAllBooksOfAuthor(@PathVariable("id") Long authorID) {
+        return bookService.getAllBooksOfAuthor(authorID);
+    }
 }

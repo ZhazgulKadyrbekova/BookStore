@@ -65,7 +65,7 @@ public class BookService {
     }
 
     public List<Book> getAllBooksByAuthor(Author author) {
-        return bookRepository.findAllByAuthor(author);
+        return bookRepository.findAllByAuthorOrderByAverageRatingDesc(author);
     }
 
     public List<Book> getAllBooksByCategory(Category category) {
@@ -246,4 +246,14 @@ public class BookService {
             throw new AccessDeniedException("You can not delete someone's comments.");
         }
     }
+
+    public List<Book> getTopTenBooksWithHighRatingByType(String type) {
+        return bookRepository.findTop10ByTypeOrderByAverageRatingDesc(type);
+    }
+
+    public List<Book> getAllBooksOfAuthor(long authorID) {
+        Author author = authorService.getAuthorByID(authorID);
+        return bookRepository.findAllByAuthorOrderByAverageRatingDesc(author);
+    }
+
 }
