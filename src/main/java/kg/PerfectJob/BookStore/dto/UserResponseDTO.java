@@ -4,15 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class AuthorDTO {
-    private String name;
-    private String surname;
-    private LocalDate birthDate;
-    private String biography;
+public class UserResponseDTO {
+    private String message;
+    private String email;
+    private String role;
 }

@@ -34,8 +34,13 @@ public class AuthorService {
         return authorRepository.findAllByTypeIgnoringCase(type);
     }
 
+    public List<Author> getAll() {
+        return authorRepository.findAll();
+    }
+
     private Author dtoToAuthor(Author author, AuthorDTO authorDTO) {
-        author.setName(authorDTO.getName());
+        String name = authorDTO.getName() + authorDTO.getSurname();
+        author.setName(name);
         author.setBirthDate(authorDTO.getBirthDate());
         author.setBiography(authorDTO.getBiography());
 
@@ -47,6 +52,7 @@ public class AuthorService {
         author.setName(user.getName());
         //TODO create & use enum
         author.setType("NEW");
+        author.setUser(user);
         authorRepository.save(author);
     }
 
@@ -57,7 +63,7 @@ public class AuthorService {
         }
 
         Author author = dtoToAuthor(new Author(), authorDTO);
-        //TODO create & use enum
+        //TODO create & use enum for type
         author.setType("OLD");
         return authorRepository.save(author);
     }
@@ -68,10 +74,14 @@ public class AuthorService {
     }
 
     public Author update(long authorID, AuthorDTO authorDTO, String email) {
-        Author author = this.getAuthorByID(authorID);
+        Author author = dtoToAuthor(this.getAuthorByID(authorID), authorDTO);
         User admin = userService.findUserByEmail(email);
         if (admin.getRole().getName().equals("ROLE_ADMIN") || (author.getType().equals("NEW") && author.getUser().getEmail().equals(email))) {
-            return authorRepository.save(dtoToAuthor(author, authorDTO));
+            if (author.getType().equals("NEW")) {
+                admin.setName(author.getName());
+                userService.saveUpdatedUser(admin);
+            }
+            return authorRepository.save(author);
         } else {
             throw new AccessDeniedException("Access Denied!");
         }

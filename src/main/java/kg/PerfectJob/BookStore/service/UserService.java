@@ -106,17 +106,17 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public String activate(String code) {
+    public UserResponseDTO activate(String code) {
         User user = userRepository.findByActivationCode(code);
         if (user == null)
-            return "Be sure to enter valid activation code";
+            throw new InvalidInputException("Be sure to enter valid activation code");
         user.setActivationCode(null);
         user.setActive(true);
+        userRepository.save(user);
         if (user.getOccupation().equals("WRITER")) {
             authorService.createNewAuthor(user);
         }
-        userRepository.save(user);
-        return "Account has been activated";
+        return new UserResponseDTO ("Account has been activated", user.getEmail(), user.getRole().getName());
     }
 
     public String forgotPassword(String email) {
@@ -175,5 +175,8 @@ public class UserService {
         User user = this.findUserByEmail(email);
         user.setName(userEditDTO.getName() + " " + userEditDTO.getSurname());
         return userRepository.save(user);
+    }
+    public void saveUpdatedUser(User user) {
+        userRepository.save(user);
     }
 }
