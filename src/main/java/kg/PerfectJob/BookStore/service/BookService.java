@@ -248,7 +248,7 @@ public class BookService {
     }
 
     public List<Book> getTopTenBooksWithHighRatingByType(String type) {
-        return bookRepository.findTop10ByTypeOrderByAverageRatingDesc(type);
+        return bookRepository.findTop10ByTypeIgnoringCaseOrderByAverageRatingDesc(type);
     }
 
     public List<Book> getAllBooksOfAuthor(long authorID) {

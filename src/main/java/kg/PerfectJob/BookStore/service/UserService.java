@@ -28,7 +28,8 @@ public class UserService {
     private final AuthorService authorService;
     private final CloudinaryService cloudinaryService;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, MailService mailService, PasswordEncoder encoder,
+    public UserService(UserRepository userRepository, RoleRepository roleRepository,
+                       MailService mailService, PasswordEncoder encoder,
                        @Lazy AuthorService authorService, CloudinaryService cloudinaryService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -65,7 +66,8 @@ public class UserService {
 	        role = roleRepository.save(new Role("ROLE_" + userDTO.getOccupation().toUpperCase()));
         }
 	    user.setRole(role);
-        String message = "To activate your account visit link: register/activate/" + user.getActivationCode();
+        String message = "To activate your account visit link: http:localhost:3000/user/account/activate/"
+                + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation of account", message)) {
             userRepository.save(user);
             return "Activation code has been successfully sent to email " + userDTO.getEmail();
@@ -85,7 +87,8 @@ public class UserService {
             role = roleRepository.save(new Role("ROLE_" + userAdminDTO.getRole().toUpperCase()));
         user.setRole(role);
 	    user.setActivationCode(UUID.randomUUID().toString());
-        String message = "To activate your account visit link: register/activate/" + user.getActivationCode();
+        String message = "To activate your account visit link: http:localhost:3000/user/account/activate/"
+                + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation of account", message)) {
             userRepository.save(user);
             return "Activation code has been sent to user's email " + userAdminDTO.getEmail();
@@ -93,11 +96,7 @@ public class UserService {
         return "We could not send activation code. Try again later.";
     }
 
-    public User saveAdmin(UserSaveAdminDTO userSaveAdminDTO, String email) {
-        User admin = findUserByEmail(email);
-        if (!admin.getRole().getName().equals("ROLE_ADMIN") || !admin.getRole().getName().equals("ROLE_MODERATOR")) {
-            throw new AccessDeniedException("Access Denied!");
-        }
+    public User saveAdmin(UserSaveAdminDTO userSaveAdminDTO) {
         User user = userRepository.findByEmailIgnoreCase(userSaveAdminDTO.getEmail());
         if (!user.isActive())
             throw new InvalidInputException("Be sure to activate account at first");
@@ -116,7 +115,8 @@ public class UserService {
         if (user.getOccupation().equals("WRITER")) {
             authorService.createNewAuthor(user);
         }
-        return new UserResponseDTO ("Account has been activated", user.getEmail(), user.getRole().getName());
+        return new UserResponseDTO ("Account has been activated", user.getEmail(),
+                user.getRole().getName());
     }
 
     public String forgotPassword(String email) {

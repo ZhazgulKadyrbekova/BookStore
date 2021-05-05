@@ -14,5 +14,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findAllByCategory(Category category);
     List<Book> findAllByConfirmed(boolean confirmed);
     List<Book> findAllByNameContainingIgnoringCase(String name);
-    List<Book> findTop10ByTypeOrderByAverageRatingDesc(String type);
+    List<Book> findTop10ByTypeIgnoringCaseOrderByAverageRatingDesc(String type);
 }

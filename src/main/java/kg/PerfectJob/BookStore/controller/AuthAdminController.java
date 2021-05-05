@@ -31,10 +31,8 @@ public class AuthAdminController {
     }
 
     @PostMapping("save")
-    public User saveAdmin(@RequestBody UserSaveAdminDTO userDTO, Principal principal) {
-        if (principal == null)
-            throw new UnauthorizedException("Please, authorize to see the response");
-        return userService.saveAdmin(userDTO, principal.getName());
+    public User saveAdmin(@RequestBody UserSaveAdminDTO userDTO) {
+        return userService.saveAdmin(userDTO);
     }
 
 }
