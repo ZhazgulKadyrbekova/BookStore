@@ -176,7 +176,27 @@ public class UserService {
         user.setName(userEditDTO.getName() + " " + userEditDTO.getSurname());
         return userRepository.save(user);
     }
+
     public void saveUpdatedUser(User user) {
+        userRepository.save(user);
+    }
+
+    public String blockUserByID(long userID, String adminEmail) {
+        User admin = findUserByEmail(adminEmail);
+        if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
+            throw new AccessDeniedException("Access Denied!");
+        }
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userID + " not found"));
+        user.setActive(false);
+        userRepository.save(user);
+        return "User " + user.getEmail() + " set as inactive";
+    }
+
+    public void setReaderRole(User user) {
+        Role role = roleRepository.findByNameContainingIgnoreCase("ROLE_READER");
+        if (role == null) role = roleRepository.save(new Role("ROLE_READER"));
+        user.setRole(role);
         userRepository.save(user);
     }
 }

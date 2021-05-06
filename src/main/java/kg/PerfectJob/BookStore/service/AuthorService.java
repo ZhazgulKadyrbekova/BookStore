@@ -92,14 +92,11 @@ public class AuthorService {
         Author author = this.getAuthorByID(authorID);
         User admin = userService.findUserByEmail(email);
         if (admin.getRole().getName().equalsIgnoreCase("ROLE_ADMIN") || (author.getType().equalsIgnoreCase("NEW") && author.getUser().getEmail().equalsIgnoreCase(email))) {
-            for (Book book : bookService.getAllBooksByAuthor(author)) {
-                bookService.setAuthorNull(book);
-            }
+            for (Book book : bookService.getAllBooksByAuthor(author)) bookService.setAuthorNull(book);
+            if (author.getType().equalsIgnoreCase("NEW")) userService.setReaderRole(author.getUser());
             authorRepository.delete(author);
             return "Author " + author.getName() + " has been completely deleted.";
-        } else {
-            throw new AccessDeniedException("Access Denied!");
-        }
+        } else throw new AccessDeniedException("Access Denied!");
     }
 
     public void setImage(Media image, User user) {

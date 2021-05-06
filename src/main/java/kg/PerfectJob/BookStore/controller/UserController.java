@@ -84,4 +84,13 @@ public class UserController {
         log.info("User {} deleted image.", email);
         return new ResponseMessage(userService.deleteImage(principal.getName()));
     }
+
+    @DeleteMapping("/{userID}")
+    public ResponseMessage blockUserByID(@PathVariable("userID") Long id, Principal principal) {
+        if (principal == null)
+            throw new UnauthorizedException("Please, authorize to see the response");
+        String email = principal.getName();
+        log.info("User {} blocked user with id {}", email, id);
+        return new ResponseMessage(userService.blockUserByID(id, email));
+    }
 }
