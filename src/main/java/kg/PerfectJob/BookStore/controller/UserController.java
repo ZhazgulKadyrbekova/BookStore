@@ -3,8 +3,10 @@ package kg.PerfectJob.BookStore.controller;
 import kg.PerfectJob.BookStore.dto.ResponseMessage;
 import kg.PerfectJob.BookStore.dto.UserEditDTO;
 import kg.PerfectJob.BookStore.dto.UserPasswordDTO;
+import kg.PerfectJob.BookStore.entity.Author;
 import kg.PerfectJob.BookStore.entity.User;
 import kg.PerfectJob.BookStore.exception.UnauthorizedException;
+import kg.PerfectJob.BookStore.service.AuthorService;
 import kg.PerfectJob.BookStore.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +23,11 @@ import java.util.Set;
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
+    private final AuthorService authorService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AuthorService authorService) {
         this.userService = userService;
+        this.authorService = authorService;
     }
 
     @GetMapping
@@ -92,5 +96,10 @@ public class UserController {
         String email = principal.getName();
         log.info("User {} blocked user with id {}", email, id);
         return new ResponseMessage(userService.blockUserByID(id, email));
+    }
+
+    @GetMapping("/author/{userID}")
+    public Author getAuthorByUserID(@PathVariable("userID") Long userID) {
+        return authorService.getAuthorByUserID(userID);
     }
 }

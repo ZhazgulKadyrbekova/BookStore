@@ -6,10 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AuthorRepository extends JpaRepository<Author, Long> {
-    Author findAuthorByUser(User user);
+    Optional<Author> findAuthorByUser(User user);
     List<Author> findAllByNameContainingIgnoringCase(String name);
     List<Author> findAllByTypeIgnoringCase(String type);
 }

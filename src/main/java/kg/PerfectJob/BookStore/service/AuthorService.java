@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AuthorService {
@@ -100,8 +101,9 @@ public class AuthorService {
     }
 
     public void setImage(Media image, User user) {
-        Author author = authorRepository.findAuthorByUser(user);
-        if (author != null) {
+        Optional<Author> optionalAuthor = authorRepository.findAuthorByUser(user);
+        if (optionalAuthor.isPresent()) {
+            Author author = optionalAuthor.get();
             author.setImage(image);
             authorRepository.save(author);
         }
@@ -120,9 +122,12 @@ public class AuthorService {
     }
 
     public void deleteImage(User user) {
-        Author author = authorRepository.findAuthorByUser(user);
-        author.setImage(null);
-        authorRepository.save(author);
+        Optional<Author> optionalAuthor = authorRepository.findAuthorByUser(user);
+        if (optionalAuthor.isPresent()) {
+            Author author = optionalAuthor.get();
+            author.setImage(null);
+            authorRepository.save(author);
+        }
     }
 
     public String deleteImage(Long authorID, String email) {
@@ -144,5 +149,14 @@ public class AuthorService {
         double aveRating = (author.getAverageRating() + book.getAverageRating()) / 2;
         author.setAverageRating(aveRating);
         authorRepository.save(author);
+    }
+
+    public Author getAuthorByUserID(long userId) {
+        User user = userService.findUserByID(userId);
+        Optional<Author> optionalAuthor = authorRepository.findAuthorByUser(user);
+        if (optionalAuthor.isPresent())
+            return optionalAuthor.get();
+        else
+            throw new ResourceNotFoundException("Author with user id " + userId + " not found");
     }
 }

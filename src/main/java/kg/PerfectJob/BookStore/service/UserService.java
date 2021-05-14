@@ -45,6 +45,11 @@ public class UserService {
         return users;
     }
 
+    public User findUserByID(long userID) {
+        return userRepository.findById(userID)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userID + " not found"));
+    }
+
     public User findUserByEmail(String email) {
         return userRepository.findByEmailIgnoreCase(email);
     }
@@ -186,8 +191,7 @@ public class UserService {
         if (!admin.getRole().getName().equals("ROLE_ADMIN")) {
             throw new AccessDeniedException("Access Denied!");
         }
-        User user = userRepository.findById(userID)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userID + " not found"));
+        User user = this.findUserByID(userID);
         user.setActive(false);
         userRepository.save(user);
         return "User " + user.getEmail() + " set as inactive";
