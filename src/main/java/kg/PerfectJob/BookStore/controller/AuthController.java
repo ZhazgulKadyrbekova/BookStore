@@ -46,7 +46,7 @@ public class AuthController {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userAuthDTO.getEmail(), userAuthDTO.getPassword()));
         } catch (Exception e) {
-            throw new Exception("Invalid data");
+            throw new Exception("Invalid credentials");
         }
         log.debug("User {} signed in", userAuthDTO.getEmail());
         return new TokenDTO(jwtUtil.generateToken(userAuthDTO.getEmail()));
