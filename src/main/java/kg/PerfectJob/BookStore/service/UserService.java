@@ -71,7 +71,7 @@ public class UserService {
 	        role = roleRepository.save(new Role("ROLE_" + userDTO.getOccupation().toUpperCase()));
         }
 	    user.setRole(role);
-        String message = "To activate your account visit link: runforest.hostronavt.ru/user/account/activate/"
+        String message = "To activate your account visit link: localhost:3000/user/account/activate/"
                 + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation of account", message)) {
             userRepository.save(user);
@@ -92,7 +92,7 @@ public class UserService {
             role = roleRepository.save(new Role("ROLE_" + userAdminDTO.getRole().toUpperCase()));
         user.setRole(role);
 	    user.setActivationCode(UUID.randomUUID().toString());
-        String message = "To activate your account visit link: runforest.hostronavt.ru/user/account/activate/"
+        String message = "To activate your account visit link: localhost:3000/user/account/activate/"
                 + user.getActivationCode();
         if (mailService.send(user.getEmail(), "Activation of account", message)) {
             userRepository.save(user);
