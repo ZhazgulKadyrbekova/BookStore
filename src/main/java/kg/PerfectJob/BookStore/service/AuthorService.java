@@ -143,7 +143,7 @@ public class AuthorService {
     }
 
     public void updateRating(Book book) {
-        long authorID = book.getID();
+        long authorID = book.getAuthor().getID();
         Author author = getAuthorByID(authorID);
 
         double aveRating = (author.getAverageRating() + book.getAverageRating()) / 2;
